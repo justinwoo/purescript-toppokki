@@ -1,0 +1,12 @@
+{
+  "name": "purescript-toppokki",
+  "set": "kalles",
+  "source": "https://github.com/justinwoo/package-sets.git",
+  "depends": [
+    "test-unit",
+    "node-buffer",
+    "aff-promise",
+    "eff",
+    "prelude"
+  ]
+}
