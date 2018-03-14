@@ -47,3 +47,7 @@ exports._pdf = function(options, page) {
     return page.pdf(options);
   };
 };
+
+exports._on = function(event, callback, page) {
+  return page.on(event, callback);
+};
