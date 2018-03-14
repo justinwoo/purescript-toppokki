@@ -1,5 +1,7 @@
 # PureScript-Toppokki
 
+[![Build Status](https://travis-ci.org/justinwoo/purescript-toppokki.svg?branch=master)](https://travis-ci.org/justinwoo/purescript-toppokki)
+
 A binding to [puppeteer](https://github.com/GoogleChrome/puppeteer) to drive headless Chrome.
 
 This module is incomplete, and you can help by submitting PRs.
