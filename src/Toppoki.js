@@ -47,3 +47,13 @@ exports._pdf = function(options, page) {
     return page.pdf(options);
   };
 };
+
+exports._on = function(event, callback, page) {
+  return page.on(event, callback);
+};
+
+exports._pageWaitForSelector = function(selector, options, page) {
+  return function() {
+    return page.waitForSelector(selector, options);
+  };
+};
