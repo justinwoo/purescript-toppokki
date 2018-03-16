@@ -8,6 +8,7 @@ import Control.Monad.Eff.Exception (Error)
 import Control.Monad.Eff.Uncurried as EU
 import Control.Promise (Promise)
 import Control.Promise as Promise
+import Data.Foreign (Foreign)
 import Data.Function.Uncurried as FU
 import Data.Newtype (class Newtype)
 import Node.Buffer (Buffer)
@@ -16,9 +17,13 @@ import Unsafe.Coerce (unsafeCoerce)
 foreign import data Puppeteer :: Type
 foreign import data Browser :: Type
 foreign import data Page :: Type
+foreign import data ElementHandle :: Type
 
 newtype URL = URL String
 derive instance newtypeURL :: Newtype URL _
+
+newtype Selector = Selector String
+derive instance newtypeSelector :: Newtype Selector _
 
 launch :: forall e. Aff e Browser
 launch = Promise.toAffE _launch
@@ -102,6 +107,19 @@ onPageError = EU.runEffFn3 _on "pageerror"
 onLoad :: forall e. EU.EffFn1 e Unit Unit -> Page -> Eff e Unit
 onLoad = EU.runEffFn3 _on "load"
 
+pageWaitForSelector
+  :: forall options trash e
+   . Union options trash
+       ( visible :: Boolean
+       , hidden :: Boolean
+       , timeout :: Int
+       )
+  => Selector
+  -> { | options }
+  -> Page
+  -> Aff e ElementHandle
+pageWaitForSelector s o p = Promise.toAffE $ FU.runFn3 _pageWaitForSelector s o p
+
 foreign import puppeteer :: Puppeteer
 foreign import _launch :: forall e. Eff e (Promise Browser)
 foreign import _newPage :: forall e. FU.Fn1 Browser (Eff e (Promise Page))
@@ -111,3 +129,4 @@ foreign import _content :: forall e. FU.Fn1 Page (Eff e (Promise String))
 foreign import _screenshot :: forall options e. FU.Fn2 options Page (Eff e (Promise Buffer))
 foreign import _pdf :: forall options e. FU.Fn2 options Page (Eff e (Promise Buffer))
 foreign import _on :: forall a e. EU.EffFn3 e String (EU.EffFn1 e a Unit) Page Unit
+foreign import _pageWaitForSelector :: forall options e. FU.Fn3 Selector options Page (Eff e (Promise ElementHandle))

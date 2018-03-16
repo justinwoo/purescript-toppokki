@@ -26,6 +26,7 @@ gotoAndLoad' url page aff = makeAff \cb -> do
 main :: _
 main = runTest do
   suite "toppokki" do
+
     test "can screenshot and pdf output a loaded page" do
       browser <- T.launch
       page <- T.newPage browser
@@ -35,6 +36,7 @@ main = runTest do
       _ <- T.screenshot {path: "./test/test.png"} page
       _ <- T.pdf {path: "./test/test.pdf"} page
       T.close browser
+
     test "can listen for errors and page load" do
       browser <- T.launch
       page <- T.newPage browser
@@ -49,3 +51,17 @@ main = runTest do
         value <- liftEff $ readRef ref
         Assert.assert "error occurs from crash.html" $ isJust value
         T.close browser
+
+    test "can wait for selectors" do
+      browser <- T.launch
+      page <- T.newPage browser
+      dir <- liftEff cwd
+      let url = T.URL
+              $ "file://"
+             <> dir
+             <> "/test/crash.html"
+      ref <- liftEff $ newRef Nothing
+      liftEff $ T.onPageError (EU.mkEffFn1 $ writeRef ref <<< Just) page
+      T.goto (T.URL "https://example.com") page
+      _ <- T.pageWaitForSelector (T.Selector "h1") {} page
+      T.close browser
