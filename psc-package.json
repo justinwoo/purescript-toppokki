@@ -3,6 +3,7 @@
   "set": "kalles",
   "source": "https://github.com/justinwoo/package-sets.git",
   "depends": [
+    "node-process",
     "test-unit",
     "node-buffer",
     "aff-promise",
