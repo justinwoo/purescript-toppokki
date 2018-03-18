@@ -8,7 +8,6 @@ import Control.Monad.Eff.Exception (Error)
 import Control.Monad.Eff.Uncurried as EU
 import Control.Promise (Promise)
 import Control.Promise as Promise
-import Data.Foreign (Foreign)
 import Data.Function.Uncurried as FU
 import Data.Newtype (class Newtype)
 import Node.Buffer (Buffer)
