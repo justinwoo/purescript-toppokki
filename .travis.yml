@@ -3,8 +3,9 @@ sudo: required
 dist: trusty
 node_js: 8
 install:
-  - npm install -g purescript@0.11.6 pulp@next bower
+  - npm install -g purescript purescript-psa pulp bower
 script:
   - npm install
   - bower install
+  - pulp build -- --stash --censor-lib
   - pulp test
