@@ -57,3 +57,35 @@ exports._pageWaitForSelector = function(selector, options, page) {
     return page.waitForSelector(selector, options);
   };
 };
+
+exports._focus = function(page, selector) {
+  return function() {
+    return page.focus(selector);
+  };
+};
+
+exports._type = function(page, content, options) {
+  return function() {
+    return page.type(content, options);
+  };
+};
+
+exports._click = function(page, selector) {
+  return function() {
+    return page.click(selector);
+  };
+};
+
+exports._waitForNavigation = function(page, options) {
+  return function() {
+    return page.waitForNavigation(options);
+  };
+};
+
+exports._getLocationHref = function(page) {
+  return function() {
+    return page.evaluate(function() {
+      return window.location.href;
+    });
+  };
+};

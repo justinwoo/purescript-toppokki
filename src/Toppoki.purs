@@ -119,6 +119,41 @@ pageWaitForSelector
   -> Aff e ElementHandle
 pageWaitForSelector s o p = Promise.toAffE $ FU.runFn3 _pageWaitForSelector s o p
 
+focus :: forall e. Page -> Selector -> Aff e Unit
+focus p s = Promise.toAffE $ FU.runFn2 _focus p s
+
+type_
+  :: forall options trash e
+   . Union options trash
+       ( delay :: Int
+       )
+  => Page
+  -> String
+  -> { | options }
+  -> Aff e Unit
+type_ p c o = Promise.toAffE $ FU.runFn3 _type p c o
+
+click :: forall e. Page -> Selector -> Aff e Unit
+click p s = Promise.toAffE $ FU.runFn2 _click p s
+
+foreign import data WaitUntilOption :: Type
+
+waitUntil :: WaitUntilOption
+waitUntil = unsafeCoerce $ "networkidle"
+
+waitForNavigation
+  :: forall options trash e
+   . Union options trash
+       ( waitUntil :: String
+       )
+  => Page
+  -> { | options }
+  -> Aff e Unit
+waitForNavigation p o = Promise.toAffE $ FU.runFn2 _waitForNavigation p o
+
+getLocationRef :: forall e. Page -> Aff e Unit
+getLocationRef p = Promise.toAffE $ FU.runFn1 _getLocationHref p
+
 foreign import puppeteer :: Puppeteer
 foreign import _launch :: forall e. Eff e (Promise Browser)
 foreign import _newPage :: forall e. FU.Fn1 Browser (Eff e (Promise Page))
@@ -129,3 +164,8 @@ foreign import _screenshot :: forall options e. FU.Fn2 options Page (Eff e (Prom
 foreign import _pdf :: forall options e. FU.Fn2 options Page (Eff e (Promise Buffer))
 foreign import _on :: forall a e. EU.EffFn3 e String (EU.EffFn1 e a Unit) Page Unit
 foreign import _pageWaitForSelector :: forall options e. FU.Fn3 Selector options Page (Eff e (Promise ElementHandle))
+foreign import _focus :: forall e. FU.Fn2 Page Selector (Eff e (Promise Unit))
+foreign import _type :: forall options e. FU.Fn3 Page String options (Eff e (Promise Unit))
+foreign import _click :: forall e. FU.Fn2 Page Selector (Eff e (Promise Unit))
+foreign import _waitForNavigation :: forall options e. FU.Fn2 Page options (Eff e (Promise Unit))
+foreign import _getLocationHref :: forall e. FU.Fn1 Page (Eff e (Promise Unit))
