@@ -29,7 +29,7 @@ tests dir = runTest do
            <> "/test/crash.html"
 
     test "can screenshot and pdf output a loaded page" do
-      browser <- T.launch
+      browser <- T.launch {}
       page <- T.newPage browser
       T.goto crashUrl page
       content <- T.content page
@@ -39,7 +39,7 @@ tests dir = runTest do
       T.close browser
 
     test "can listen for errors and page load" do
-      browser <- T.launch
+      browser <- T.launch {}
       page <- T.newPage browser
       dir <- liftEff cwd
       ref <- liftEff $ newRef Nothing
@@ -50,7 +50,7 @@ tests dir = runTest do
         T.close browser
 
     test "can wait for selectors" do
-      browser <- T.launch
+      browser <- T.launch {}
       page <- T.newPage browser
       ref <- liftEff $ newRef Nothing
       liftEff $ T.onPageError (EU.mkEffFn1 $ writeRef ref <<< Just) page
