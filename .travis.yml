@@ -1,7 +1,7 @@
 language: node_js
 sudo: required
 dist: trusty
-node_js: 8
+node_js: stable
 install:
   - npm install -g purescript purescript-psa pulp bower
 script:

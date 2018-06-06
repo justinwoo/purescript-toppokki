@@ -12,6 +12,6 @@
   "author": "",
   "license": "MIT",
   "devDependencies": {
-    "puppeteer": "^1.1.1"
+    "puppeteer": "^1.4.0"
   }
 }
