@@ -2,16 +2,17 @@ module Toppokki where
 
 import Prelude
 
-import Control.Monad.Aff (Aff)
-import Control.Monad.Eff (Eff)
-import Control.Monad.Eff.Exception (Error)
-import Control.Monad.Eff.Uncurried as EU
 import Control.Promise (Promise)
 import Control.Promise as Promise
-import Data.Foreign (Foreign)
 import Data.Function.Uncurried as FU
 import Data.Newtype (class Newtype)
+import Effect (Effect)
+import Effect.Aff (Aff)
+import Effect.Exception (Error)
+import Effect.Uncurried as EU
+import Foreign (Foreign)
 import Node.Buffer (Buffer)
+import Prim.Row as Row
 import Unsafe.Coerce (unsafeCoerce)
 
 foreign import data Puppeteer :: Type
@@ -30,22 +31,22 @@ type LaunchOptions =
   )
 
 launch
-  :: forall options trash e
-   . Union options trash LaunchOptions
+  :: forall options trash
+   . Row.Union options trash LaunchOptions
   => { | options }
-  -> Aff e Browser
+  -> Aff Browser
 launch = runPromiseAffE1 _launch
 
-newPage :: forall e. Browser -> Aff e Page
+newPage :: Browser -> Aff Page
 newPage = runPromiseAffE1 _newPage
 
-goto :: forall e. URL -> Page -> Aff e Unit
+goto :: URL -> Page -> Aff Unit
 goto = runPromiseAffE2 _goto
 
-close :: forall e. Browser -> Aff e Unit
+close :: Browser -> Aff Unit
 close = runPromiseAffE1 _close
 
-content :: forall e. Page -> Aff e String
+content :: Page -> Aff String
 content = runPromiseAffE1 _content
 
 type ScreenshotOptions =
@@ -63,11 +64,11 @@ type ScreenshotOptions =
   )
 
 screenshot
-  :: forall options trash e
-   . Union options trash ScreenshotOptions
+  :: forall options trash
+   . Row.Union options trash ScreenshotOptions
   => { | options }
   -> Page
-  -> Aff e Buffer
+  -> Aff Buffer
 screenshot o p = runPromiseAffE2 _screenshot o p
 
 foreign import data PDFMargin :: Type
@@ -81,7 +82,7 @@ type PDFMarginOptions =
 
 makePDFMargin
   :: forall options trash
-   . Union options trash PDFMarginOptions
+   . Row.Union options trash PDFMarginOptions
   => { | options }
   -> PDFMargin
 makePDFMargin = unsafeCoerce
@@ -102,22 +103,22 @@ type PDFOptions =
   )
 
 pdf
-  :: forall options trash e
-   . Union options trash PDFOptions
+  :: forall options trash
+   . Row.Union options trash PDFOptions
   => { | options }
   -> Page
-  -> Aff e Buffer
+  -> Aff Buffer
 pdf = runPromiseAffE2 _pdf
 
-onPageError :: forall e. EU.EffFn1 e Error Unit -> Page -> Eff e Unit
-onPageError = EU.runEffFn3 _on "pageerror"
+onPageError :: EU.EffectFn1 Error Unit -> Page -> Effect Unit
+onPageError = EU.runEffectFn3 _on "pageerror"
 
-onLoad :: forall e. EU.EffFn1 e Unit Unit -> Page -> Eff e Unit
-onLoad = EU.runEffFn3 _on "load"
+onLoad :: EU.EffectFn1 Unit Unit -> Page -> Effect Unit
+onLoad = EU.runEffectFn3 _on "load"
 
 pageWaitForSelector
-  :: forall options trash e
-   . Union options trash
+  :: forall options trash
+   . Row.Union options trash
        ( visible :: Boolean
        , hidden :: Boolean
        , timeout :: Int
@@ -125,25 +126,25 @@ pageWaitForSelector
   => Selector
   -> { | options }
   -> Page
-  -> Aff e ElementHandle
+  -> Aff ElementHandle
 pageWaitForSelector = runPromiseAffE3 _pageWaitForSelector
 
-focus :: forall e. Selector -> Page -> Aff e Unit
+focus :: Selector -> Page -> Aff Unit
 focus = runPromiseAffE2 _focus
 
 type_
-  :: forall options trash e
-   . Union options trash
+  :: forall options trash
+   . Row.Union options trash
        ( delay :: Int
        )
   => Selector
   -> String
   -> { | options }
   -> Page
-  -> Aff e Unit
+  -> Aff Unit
 type_ = runPromiseAffE4 _type
 
-click :: forall e. Selector -> Page -> Aff e Unit
+click :: Selector -> Page -> Aff Unit
 click = runPromiseAffE2 _click
 
 foreign import data WaitUntilOption :: Type
@@ -152,46 +153,46 @@ networkIdle :: WaitUntilOption
 networkIdle = unsafeCoerce $ "networkidle"
 
 waitForNavigation
-  :: forall options trash e
-   . Union options trash
+  :: forall options trash
+   . Row.Union options trash
        ( waitUntil :: WaitUntilOption
        )
   => { | options }
   -> Page
-  -> Aff e Unit
+  -> Aff Unit
 waitForNavigation = runPromiseAffE2 _waitForNavigation
 
-getLocationRef :: forall e. Page -> Aff e String
+getLocationRef :: Page -> Aff String
 getLocationRef p = Promise.toAffE $ FU.runFn1 _getLocationHref p
 
-unsafeEvaluateStringFunction :: forall e. String -> Page -> Aff e Foreign
+unsafeEvaluateStringFunction :: String -> Page -> Aff Foreign
 unsafeEvaluateStringFunction = runPromiseAffE2 _unsafeEvaluateStringFunction
 
-runPromiseAffE1 :: forall a o e. FU.Fn1 a (Eff e (Promise o)) -> a -> Aff e o
+runPromiseAffE1 :: forall a o. FU.Fn1 a (Effect (Promise o)) -> a -> Aff o
 runPromiseAffE1 f a = Promise.toAffE $ FU.runFn1 f a
 
-runPromiseAffE2 :: forall a b o e. FU.Fn2 a b (Eff e (Promise o)) -> a -> b -> Aff e o
+runPromiseAffE2 :: forall a b o. FU.Fn2 a b (Effect (Promise o)) -> a -> b -> Aff o
 runPromiseAffE2 f a b = Promise.toAffE $ FU.runFn2 f a b
 
-runPromiseAffE3 :: forall a b c o e. FU.Fn3 a b c (Eff e (Promise o)) -> a -> b -> c -> Aff e o
+runPromiseAffE3 :: forall a b c o. FU.Fn3 a b c (Effect (Promise o)) -> a -> b -> c -> Aff o
 runPromiseAffE3 f a b c =  Promise.toAffE $ FU.runFn3 f a b c
 
-runPromiseAffE4 :: forall a b c d o e. FU.Fn4 a b c d (Eff e (Promise o)) -> a -> b -> c -> d -> Aff e o
+runPromiseAffE4 :: forall a b c d o. FU.Fn4 a b c d (Effect (Promise o)) -> a -> b -> c -> d -> Aff o
 runPromiseAffE4 f a b c d =  Promise.toAffE $ FU.runFn4 f a b c d
 
 foreign import puppeteer :: Puppeteer
-foreign import _launch :: forall options e. FU.Fn1 options (Eff e (Promise Browser))
-foreign import _newPage :: forall e. FU.Fn1 Browser (Eff e (Promise Page))
-foreign import _goto :: forall e. FU.Fn2 URL Page (Eff e (Promise Unit))
-foreign import _close :: forall e. FU.Fn1 Browser (Eff e (Promise Unit))
-foreign import _content :: forall e. FU.Fn1 Page (Eff e (Promise String))
-foreign import _screenshot :: forall options e. FU.Fn2 options Page (Eff e (Promise Buffer))
-foreign import _pdf :: forall options e. FU.Fn2 options Page (Eff e (Promise Buffer))
-foreign import _on :: forall a e. EU.EffFn3 e String (EU.EffFn1 e a Unit) Page Unit
-foreign import _pageWaitForSelector :: forall options e. FU.Fn3 Selector options Page (Eff e (Promise ElementHandle))
-foreign import _focus :: forall e. FU.Fn2 Selector Page (Eff e (Promise Unit))
-foreign import _type :: forall options e. FU.Fn4 Selector String options Page (Eff e (Promise Unit))
-foreign import _click :: forall e. FU.Fn2 Selector Page (Eff e (Promise Unit))
-foreign import _waitForNavigation :: forall options e. FU.Fn2 options Page (Eff e (Promise Unit))
-foreign import _getLocationHref :: forall e. FU.Fn1 Page (Eff e (Promise String))
-foreign import _unsafeEvaluateStringFunction :: forall e. FU.Fn2 String Page (Eff e (Promise Foreign))
+foreign import _launch :: forall options. FU.Fn1 options (Effect (Promise Browser))
+foreign import _newPage :: FU.Fn1 Browser (Effect (Promise Page))
+foreign import _goto :: FU.Fn2 URL Page (Effect (Promise Unit))
+foreign import _close :: FU.Fn1 Browser (Effect (Promise Unit))
+foreign import _content :: FU.Fn1 Page (Effect (Promise String))
+foreign import _screenshot :: forall options. FU.Fn2 options Page (Effect (Promise Buffer))
+foreign import _pdf :: forall options. FU.Fn2 options Page (Effect (Promise Buffer))
+foreign import _on :: forall a. EU.EffectFn3 String (EU.EffectFn1 a Unit) Page Unit
+foreign import _pageWaitForSelector :: forall options. FU.Fn3 Selector options Page (Effect (Promise ElementHandle))
+foreign import _focus :: FU.Fn2 Selector Page (Effect (Promise Unit))
+foreign import _type :: forall options. FU.Fn4 Selector String options Page (Effect (Promise Unit))
+foreign import _click :: FU.Fn2 Selector Page (Effect (Promise Unit))
+foreign import _waitForNavigation :: forall options. FU.Fn2 options Page (Effect (Promise Unit))
+foreign import _getLocationHref :: FU.Fn1 Page (Effect (Promise String))
+foreign import _unsafeEvaluateStringFunction :: FU.Fn2 String Page (Effect (Promise Foreign))

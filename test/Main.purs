@@ -2,25 +2,25 @@ module Test.Main where
 
 import Prelude
 
-import Control.Monad.Aff (launchAff_, makeAff)
-import Control.Monad.Eff.Class (liftEff)
-import Control.Monad.Eff.Ref (newRef, readRef, writeRef)
-import Control.Monad.Eff.Uncurried as EU
 import Data.Maybe (Maybe(..), isJust)
-import Data.Monoid (mempty)
 import Data.String as String
+import Effect (Effect)
+import Effect.Aff (launchAff_, makeAff)
+import Effect.Class (liftEffect)
+import Effect.Ref as Ref
+import Effect.Uncurried as EU
 import Node.Process (cwd)
 import Test.Unit (suite, test)
 import Test.Unit.Assert as Assert
 import Test.Unit.Main (runTest)
 import Toppokki as T
 
-main :: _
+main :: Effect Unit
 main = do
-  dir <- liftEff cwd
+  dir <- liftEffect cwd
   tests dir
 
-tests :: _
+tests :: String -> Effect Unit
 tests dir = runTest do
   suite "toppokki" do
     let crashUrl = T.URL
@@ -41,28 +41,27 @@ tests dir = runTest do
     test "can listen for errors and page load" do
       browser <- T.launch {}
       page <- T.newPage browser
-      dir <- liftEff cwd
-      ref <- liftEff $ newRef Nothing
-      liftEff $ T.onPageError (EU.mkEffFn1 $ writeRef ref <<< Just) page
+      ref <- liftEffect $ Ref.new Nothing
+      liftEffect $ T.onPageError (EU.mkEffectFn1 $ (Ref.write <@> ref) <<< Just) page
       gotoAndLoad' crashUrl page do
-        value <- liftEff $ readRef ref
+        value <- liftEffect $ Ref.read ref
         Assert.assert "error occurs from crash.html" $ isJust value
         T.close browser
 
     test "can wait for selectors" do
       browser <- T.launch {}
       page <- T.newPage browser
-      ref <- liftEff $ newRef Nothing
-      liftEff $ T.onPageError (EU.mkEffFn1 $ writeRef ref <<< Just) page
+      ref <- liftEffect $ Ref.new Nothing
+      liftEffect $ T.onPageError (EU.mkEffectFn1 $ (Ref.write <@> ref) <<< Just) page
       T.goto crashUrl page
       _ <- T.pageWaitForSelector (T.Selector "h1") {} page
       T.close browser
 
   where
     gotoAndLoad' url page aff = makeAff \cb -> do
-      T.onLoad (EU.mkEffFn1 \_ -> launchAff_ do
+      T.onLoad (EU.mkEffectFn1 \_ -> launchAff_ do
         aff
-        liftEff $ cb $ pure unit
+        liftEffect $ cb $ pure unit
         ) page
       launchAff_ $ T.goto url page
       pure mempty
