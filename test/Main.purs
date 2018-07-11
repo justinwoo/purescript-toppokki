@@ -5,7 +5,6 @@ import Prelude
 import Data.Maybe (Maybe(..), isJust)
 import Data.String as String
 import Effect (Effect)
-import Effect.Aff (launchAff_, makeAff)
 import Effect.Class (liftEffect)
 import Effect.Ref as Ref
 import Effect.Uncurried as EU
@@ -43,10 +42,10 @@ tests dir = runTest do
       page <- T.newPage browser
       ref <- liftEffect $ Ref.new Nothing
       liftEffect $ T.onPageError (EU.mkEffectFn1 $ (Ref.write <@> ref) <<< Just) page
-      gotoAndLoad' crashUrl page do
-        value <- liftEffect $ Ref.read ref
-        Assert.assert "error occurs from crash.html" $ isJust value
-        T.close browser
+      T.goto crashUrl page
+      value <- liftEffect $ Ref.read ref
+      Assert.assert "error occurs from crash.html" $ isJust value
+      T.close browser
 
     test "can wait for selectors" do
       browser <- T.launch {}
@@ -56,12 +55,3 @@ tests dir = runTest do
       T.goto crashUrl page
       _ <- T.pageWaitForSelector (T.Selector "h1") {} page
       T.close browser
-
-  where
-    gotoAndLoad' url page aff = makeAff \cb -> do
-      T.onLoad (EU.mkEffectFn1 \_ -> launchAff_ do
-        aff
-        liftEffect $ cb $ pure unit
-        ) page
-      launchAff_ $ T.goto url page
-      pure mempty
