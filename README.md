@@ -12,11 +12,19 @@ Named for glorious Tteok-bokki.
 
 ## Usage
 
+Make sure [Puppeteer](https://github.com/GoogleChrome/puppeteer) is installed (e.g. `npm i puppeteer`).
+
 ```hs
+module Main where
+
 import Toppokki as T
+import Prelude (bind, discard, (>))
+import Effect.Aff (launchAff_)
+import Test.Unit.Assert as Assert
+import Data.String as String
 
 main = launchAff_ do
-  browser <- T.launch
+  browser <- T.launch {}
   page <- T.newPage browser
   T.goto (T.URL "https://example.com") page
   content <- T.content page
