@@ -77,3 +77,20 @@ tests dir = runTest do
             T.unsafeEvaluateStringFunction "navigator.userAgent" page
       Assert.assert "user agent is set" (Right customUserAgent == ua)
       T.close browser
+
+    test "can set viewport" do
+      browser <- T.launch {}
+      page <- T.newPage browser
+      T.goto crashUrl page
+      T.setViewport { width: 100
+                    , height: 200
+                    , isMobile: false
+                    , deviceScaleFactor: 1.0
+                    , hasTouch: false
+                    , isLandscape: false } page
+      iw <- runExcept <$> F.readInt <$>
+            T.unsafeEvaluateStringFunction "window.innerWidth" page
+      ih <- runExcept <$> F.readInt <$>
+            T.unsafeEvaluateStringFunction "window.innerHeight" page
+      Assert.assert "viewport is correct" (Right 100 == iw && Right 200 == ih)
+      T.close browser

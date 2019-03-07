@@ -50,6 +50,12 @@ exports._setUserAgent = function(userAgent, page) {
   };
 };
 
+exports._setViewport = function(viewport, page) {
+  return function () {
+    return page.setViewport(viewport);
+  };
+};
+
 exports._screenshot = function(options, page) {
   return function() {
     return page.screenshot(options);

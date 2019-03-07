@@ -57,6 +57,24 @@ title = runPromiseAffE1 _title
 setUserAgent :: UserAgent -> Page -> Aff Unit
 setUserAgent = runPromiseAffE2 _setUserAgent
 
+type ViewportOptions =
+  ( deviceScaleFactor :: Number
+  , isMobile :: Boolean
+  , hasTouch :: Boolean
+  , isLandscape :: Boolean
+  )
+
+setViewport
+  :: forall options trash
+  . Row.Union options trash ViewportOptions
+  => { width :: Int
+     , height :: Int
+     | options
+     }
+  -> Page
+  -> Aff Unit
+setViewport o p = runPromiseAffE2 _setViewport o p
+
 type ScreenshotOptions =
   ( path :: String
   , type :: String
@@ -202,6 +220,7 @@ foreign import _close :: FU.Fn1 Browser (Effect (Promise Unit))
 foreign import _content :: FU.Fn1 Page (Effect (Promise String))
 foreign import _title :: FU.Fn1 Page (Effect (Promise String))
 foreign import _setUserAgent :: FU.Fn2 UserAgent Page (Effect (Promise Unit))
+foreign import _setViewport :: forall options. FU.Fn2 options  Page (Effect (Promise Unit))
 foreign import _screenshot :: forall options. FU.Fn2 options Page (Effect (Promise Buffer))
 foreign import _pdf :: forall options. FU.Fn2 options Page (Effect (Promise Buffer))
 foreign import _on :: forall a. EU.EffectFn3 String (EU.EffectFn1 a Unit) Page Unit
