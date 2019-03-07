@@ -49,6 +49,9 @@ close = runPromiseAffE1 _close
 content :: Page -> Aff String
 content = runPromiseAffE1 _content
 
+title :: Page -> Aff String
+title = runPromiseAffE1 _title
+
 type ScreenshotOptions =
   ( path :: String
   , type :: String
@@ -192,6 +195,7 @@ foreign import _newPage :: FU.Fn1 Browser (Effect (Promise Page))
 foreign import _goto :: FU.Fn2 URL Page (Effect (Promise Unit))
 foreign import _close :: FU.Fn1 Browser (Effect (Promise Unit))
 foreign import _content :: FU.Fn1 Page (Effect (Promise String))
+foreign import _title :: FU.Fn1 Page (Effect (Promise String))
 foreign import _screenshot :: forall options. FU.Fn2 options Page (Effect (Promise Buffer))
 foreign import _pdf :: forall options. FU.Fn2 options Page (Effect (Promise Buffer))
 foreign import _on :: forall a. EU.EffectFn3 String (EU.EffectFn1 a Unit) Page Unit

@@ -38,6 +38,12 @@ exports._content = function(page) {
   };
 };
 
+exports._title = function(page) {
+  return function () {
+    return page.title();
+  };
+};
+
 exports._screenshot = function(options, page) {
   return function() {
     return page.screenshot(options);

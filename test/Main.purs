@@ -55,3 +55,11 @@ tests dir = runTest do
       T.goto crashUrl page
       _ <- T.pageWaitForSelector (T.Selector "h1") {} page
       T.close browser
+
+    test "can get page title" do
+      browser <- T.launch {}
+      page <- T.newPage browser
+      T.goto crashUrl page
+      title <- T.title page
+      Assert.assert "page title is correct" (title == "Page Title")
+      T.close browser
