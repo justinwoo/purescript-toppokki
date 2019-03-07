@@ -13,6 +13,9 @@ import Test.Unit (suite, test)
 import Test.Unit.Assert as Assert
 import Test.Unit.Main (runTest)
 import Toppokki as T
+import Foreign as F
+import Control.Monad.Except (runExcept)
+import Data.Either (Either(..))
 
 main :: Effect Unit
 main = do
@@ -62,4 +65,15 @@ tests dir = runTest do
       T.goto crashUrl page
       title <- T.title page
       Assert.assert "page title is correct" (title == "Page Title")
+      T.close browser
+
+    test "can set userAgent" do
+      browser <- T.launch {}
+      page <- T.newPage browser
+      T.goto crashUrl page
+      let customUserAgent = "Custom user agent"
+      T.setUserAgent (T.UserAgent customUserAgent) page
+      ua <- runExcept <$> F.readString <$>
+            T.unsafeEvaluateStringFunction "navigator.userAgent" page
+      Assert.assert "user agent is set" (Right customUserAgent == ua)
       T.close browser

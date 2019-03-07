@@ -21,6 +21,8 @@ foreign import data Page :: Type
 foreign import data ElementHandle :: Type
 
 newtype URL = URL String
+newtype UserAgent = UserAgent String
+
 derive instance newtypeURL :: Newtype URL _
 
 newtype Selector = Selector String
@@ -51,6 +53,9 @@ content = runPromiseAffE1 _content
 
 title :: Page -> Aff String
 title = runPromiseAffE1 _title
+
+setUserAgent :: UserAgent -> Page -> Aff Unit
+setUserAgent = runPromiseAffE2 _setUserAgent
 
 type ScreenshotOptions =
   ( path :: String
@@ -196,6 +201,7 @@ foreign import _goto :: FU.Fn2 URL Page (Effect (Promise Unit))
 foreign import _close :: FU.Fn1 Browser (Effect (Promise Unit))
 foreign import _content :: FU.Fn1 Page (Effect (Promise String))
 foreign import _title :: FU.Fn1 Page (Effect (Promise String))
+foreign import _setUserAgent :: FU.Fn2 UserAgent Page (Effect (Promise Unit))
 foreign import _screenshot :: forall options. FU.Fn2 options Page (Effect (Promise Buffer))
 foreign import _pdf :: forall options. FU.Fn2 options Page (Effect (Promise Buffer))
 foreign import _on :: forall a. EU.EffectFn3 String (EU.EffectFn1 a Unit) Page Unit

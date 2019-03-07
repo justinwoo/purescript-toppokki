@@ -44,6 +44,12 @@ exports._title = function(page) {
   };
 };
 
+exports._setUserAgent = function(userAgent, page) {
+  return function () {
+    return page.setUserAgent(userAgent);
+  };
+};
+
 exports._screenshot = function(options, page) {
   return function() {
     return page.screenshot(options);
