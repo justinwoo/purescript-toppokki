@@ -2,20 +2,22 @@ module Test.Main where
 
 import Prelude
 
-import Data.Maybe (Maybe(..), isJust)
+import Control.Monad.Except (runExcept)
+import Data.Array as A
+import Data.Either (Either(..), isLeft)
+import Data.Maybe (Maybe(..), isJust, isNothing)
 import Data.String as String
 import Effect (Effect)
+import Effect.Aff (attempt)
 import Effect.Class (liftEffect)
 import Effect.Ref as Ref
 import Effect.Uncurried as EU
+import Foreign as F
 import Node.Process (cwd)
 import Test.Unit (suite, test)
 import Test.Unit.Assert as Assert
 import Test.Unit.Main (runTest)
 import Toppokki as T
-import Foreign as F
-import Control.Monad.Except (runExcept)
-import Data.Either (Either(..))
 
 main :: Effect Unit
 main = do
@@ -93,4 +95,40 @@ tests dir = runTest do
       ih <- runExcept <$> F.readInt <$>
             T.unsafeEvaluateStringFunction "window.innerHeight" page
       Assert.assert "viewport is correct" (Right 100 == iw && Right 200 == ih)
+      T.close browser
+
+    test "can use `query`" do
+      browser <- T.launch {}
+      page <- T.newPage browser
+      T.goto crashUrl page
+      unique <- T.query (T.Selector "#unique") page
+      Assert.assert "`query` finds element by selector" (isJust unique)
+      nonexistent <- T.query (T.Selector "#nonexistent") page
+      Assert.assert "`query` does not find nonexistent element" (isNothing nonexistent)
+      invalidResult <- attempt $ T.query (T.Selector "invalid!") page
+      Assert.assert "`queryMany` throws on invalid selector" (isLeft invalidResult)
+
+      let message = "`query` is able to query `ElementHandle`s"
+      T.query (T.Selector "#outer-container") page >>=
+      case _ of
+        Nothing -> Assert.assert message false
+        Just outer -> do
+          T.query (T.Selector "#middle-container") outer >>=
+          case _ of
+            Nothing -> Assert.assert message false
+            Just middle -> do
+              inner <- T.query (T.Selector "#inner-container") middle
+              Assert.assert message (isJust inner)
+      T.close browser
+
+    test "can use `queryMany`" do
+      browser <- T.launch {}
+      page <- T.newPage browser
+      T.goto crashUrl page
+      somethings <- T.queryMany (T.Selector ".something") page
+      Assert.assert "`queryMany` finds elements by selector" (A.length somethings == 3)
+      nothings <- T.queryMany (T.Selector ".nothing") page
+      Assert.assert "`queryMany` finds elements by selector" (A.length nothings == 0)
+      invalidResult <- attempt $ T.queryMany (T.Selector "invalid!") page
+      Assert.assert "`queryMany` throws on invalid selector" (isLeft invalidResult)
       T.close browser

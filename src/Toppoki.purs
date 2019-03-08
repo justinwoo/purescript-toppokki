@@ -1,29 +1,75 @@
-module Toppokki where
+module Toppokki
+       ( Puppeteer
+       , Browser
+       , Page
+       , Frame
+       , ElementHandle
+       , URL(..)
+       , UserAgent(..)
+       , Selector(..)
+       , LaunchOptions
+       , launch
+       , newPage
+       , class Queryable
+       , query
+       , queryMany
+       , goto
+       , close
+       , content
+       , title
+       , setUserAgent
+       , ViewportOptions
+       , setViewport
+       , ScreenshotOptions
+       , screenshot
+       , PDFMargin
+       , PDFMarginOptions
+       , makePDFMargin
+       , pdf
+       , onPageError
+       , onLoad
+       , pageWaitForSelector
+       , focus
+       , type_
+       , click
+       , WaitUntilOption
+       , networkIdle
+       , waitForNavigation
+       , getLocationRef
+       , unsafeEvaluateStringFunction
+       )
+where
 
 import Prelude
 
+import Control.Monad.Except (runExcept)
 import Control.Promise (Promise)
 import Control.Promise as Promise
+import Data.Either (Either(..))
 import Data.Function.Uncurried as FU
+import Data.Maybe (Maybe(..))
 import Data.Newtype (class Newtype)
 import Effect (Effect)
 import Effect.Aff (Aff)
 import Effect.Exception (Error)
 import Effect.Uncurried as EU
-import Foreign (Foreign)
+import Foreign (Foreign, readNull, unsafeFromForeign)
 import Node.Buffer (Buffer)
 import Prim.Row as Row
+import Prim.TypeError (class Fail, Text)
 import Unsafe.Coerce (unsafeCoerce)
 
 foreign import data Puppeteer :: Type
 foreign import data Browser :: Type
 foreign import data Page :: Type
+foreign import data Frame :: Type
 foreign import data ElementHandle :: Type
 
 newtype URL = URL String
-newtype UserAgent = UserAgent String
-
 derive instance newtypeURL :: Newtype URL _
+
+newtype UserAgent = UserAgent String
+derive instance newtypeUserAgent :: Newtype UserAgent _
 
 newtype Selector = Selector String
 derive instance newtypeSelector :: Newtype Selector _
@@ -41,6 +87,22 @@ launch = runPromiseAffE1 _launch
 
 newPage :: Browser -> Aff Page
 newPage = runPromiseAffE1 _newPage
+
+-- | Values which can be queried by selectors.
+class Queryable el
+
+instance queryablePage :: Queryable Page
+else instance queryableFrame :: Queryable Frame
+else instance queryableElementHandle :: Queryable ElementHandle
+else instance queryableClose :: (Fail (Text "Queryable class is closed")) => Queryable a
+
+-- | Query the element using `.$(selector)`
+query :: forall el. Queryable el => Selector -> el -> Aff (Maybe ElementHandle)
+query s el = map unsafeNullOr (runPromiseAffE2 _query s el)
+
+-- | Query the element using `.$$(selector)`
+queryMany :: forall el. Queryable el => Selector -> el -> Aff (Array ElementHandle)
+queryMany = runPromiseAffE2 _queryMany
 
 goto :: URL -> Page -> Aff Unit
 goto = runPromiseAffE2 _goto
@@ -215,6 +277,8 @@ runPromiseAffE4 f a b c d =  Promise.toAffE $ FU.runFn4 f a b c d
 foreign import puppeteer :: Puppeteer
 foreign import _launch :: forall options. FU.Fn1 options (Effect (Promise Browser))
 foreign import _newPage :: FU.Fn1 Browser (Effect (Promise Page))
+foreign import _query :: forall el. FU.Fn2 Selector el (Effect (Promise Foreign))
+foreign import _queryMany :: forall el. FU.Fn2 Selector el (Effect (Promise (Array ElementHandle)))
 foreign import _goto :: FU.Fn2 URL Page (Effect (Promise Unit))
 foreign import _close :: FU.Fn1 Browser (Effect (Promise Unit))
 foreign import _content :: FU.Fn1 Page (Effect (Promise String))
@@ -231,3 +295,9 @@ foreign import _click :: FU.Fn2 Selector Page (Effect (Promise Unit))
 foreign import _waitForNavigation :: forall options. FU.Fn2 options Page (Effect (Promise Unit))
 foreign import _getLocationHref :: FU.Fn1 Page (Effect (Promise String))
 foreign import _unsafeEvaluateStringFunction :: FU.Fn2 String Page (Effect (Promise Foreign))
+
+unsafeNullOr :: forall a. Foreign -> Maybe a
+unsafeNullOr sth =
+  case runExcept (readNull sth) of
+    Right (Just sth') -> Just (unsafeFromForeign sth')
+    _ -> Nothing

@@ -14,6 +14,18 @@ exports._newPage = function(browser) {
   };
 };
 
+exports._query = function(selector, queryable) {
+  return function() {
+    return queryable.$(selector);
+  };
+};
+
+exports._queryMany = function(selector, queryable) {
+  return function() {
+    return queryable.$$(selector);
+  };
+};
+
 exports._goto = function(url, page) {
   return function() {
     return page.goto(url);

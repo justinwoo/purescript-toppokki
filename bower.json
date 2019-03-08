@@ -23,7 +23,7 @@
     "purescript-milkis": "^6.0.1",
     "purescript-test-unit": "^14.0.0",
     "purescript-node-process": "^6.0.0",
-    "purescript-transformers": "^4.2.0",
+    "purescript-transformers": "^4.0.0",
     "purescript-foreign": "^5.0.0"
   }
 }
