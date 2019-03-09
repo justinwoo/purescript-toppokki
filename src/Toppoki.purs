@@ -13,6 +13,7 @@ module Toppokki
        , class Queryable
        , query
        , queryMany
+       , queryEval
        , goto
        , close
        , content
@@ -40,11 +41,10 @@ module Toppokki
        )
 where
 
-import Prelude
-
 import Control.Monad.Except (runExcept)
 import Control.Promise (Promise)
 import Control.Promise as Promise
+import Data.Argonaut.Encode (class EncodeJson)
 import Data.Either (Either(..))
 import Data.Function.Uncurried as FU
 import Data.Maybe (Maybe(..))
@@ -55,9 +55,13 @@ import Effect.Exception (Error)
 import Effect.Uncurried as EU
 import Foreign (Foreign, readNull, unsafeFromForeign)
 import Node.Buffer (Buffer)
+import Prelude
 import Prim.Row as Row
 import Prim.TypeError (class Fail, Text)
+import Toppoki.Inject (InjectedAff)
 import Unsafe.Coerce (unsafeCoerce)
+import Web.DOM.Element (Element)
+import Data.Argonaut.Core (Json)
 
 foreign import data Puppeteer :: Type
 foreign import data Browser :: Type
@@ -103,6 +107,23 @@ query s el = map unsafeNullOr (runPromiseAffE2 _query s el)
 -- | Query the element using `.$$(selector)`
 queryMany :: forall el. Queryable el => Selector -> el -> Aff (Array ElementHandle)
 queryMany = runPromiseAffE2 _queryMany
+
+-- `EncodeJson r` is used in the following definition because the only
+-- restriction applying to `r` is that is should be serializable.
+-- Note that the function argument of `queryEval` and `queryEvalMany` will be
+-- evaluated in the browser context.
+-- `unsafeCoerce` shows that we *believe* that puppeteer does not alter
+-- the values when copying them from the browser runtime *if* these values are
+-- of type `Json`.
+
+-- | Query the element using `.$eval(selector, pageFunction)`.
+-- |
+-- | If there's no element matching `selector`, the method throws an error.
+queryEval :: forall el r. Queryable el => EncodeJson r =>
+             Selector -> (Element -> InjectedAff r) -> el -> Aff r
+queryEval sel g el = (unsafeCoerce :: Aff Json -> Aff r) do
+  jsCode <- Promise.toAffE (_jsReflect g)
+  Promise.toAffE (FU.runFn3 _queryEval sel jsCode el)
 
 goto :: URL -> Page -> Aff Unit
 goto = runPromiseAffE2 _goto
@@ -279,6 +300,9 @@ foreign import _launch :: forall options. FU.Fn1 options (Effect (Promise Browse
 foreign import _newPage :: FU.Fn1 Browser (Effect (Promise Page))
 foreign import _query :: forall el. FU.Fn2 Selector el (Effect (Promise Foreign))
 foreign import _queryMany :: forall el. FU.Fn2 Selector el (Effect (Promise (Array ElementHandle)))
+foreign import _queryEval :: forall el.
+                 FU.Fn3 Selector String el (Effect (Promise Json))
+foreign import _jsReflect :: forall a. a -> Effect (Promise String)
 foreign import _goto :: FU.Fn2 URL Page (Effect (Promise Unit))
 foreign import _close :: FU.Fn1 Browser (Effect (Promise Unit))
 foreign import _content :: FU.Fn1 Page (Effect (Promise String))

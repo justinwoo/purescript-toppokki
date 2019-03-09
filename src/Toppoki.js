@@ -1,4 +1,26 @@
+var path = require("path");
 var puppeteer = require("puppeteer");
+var browserify = require('browserify');
+var UglifyJS = require("uglify-js");
+var Readable = require("stream").Readable;
+
+// Extract all variable names starting from capital letter
+function extractDefinitions (code) {
+  code = '(' + code + ');';
+  var globals = new Set();
+
+  function visitor(node, descend) {
+    if (node instanceof UglifyJS.AST_Symbol) {
+      if (/[A-Z]/.test(node.name[0]) && !globals.has(node.name)) {
+        globals.add(node.name);
+      }
+    }
+  }
+
+  var walker = new UglifyJS.TreeWalker(visitor);
+  UglifyJS.parse(code).walk(walker);
+  return Array.from(globals);
+}
 
 exports.puppeteer = puppeteer;
 
@@ -23,6 +45,56 @@ exports._query = function(selector, queryable) {
 exports._queryMany = function(selector, queryable) {
   return function() {
     return queryable.$$(selector);
+  };
+};
+
+exports._jsReflect = function(func) {
+  var code = unescape(func);
+  var globals = extractDefinitions(code);
+
+  return function(){
+    var readable = new Readable();
+    readable.push('(function () {\n  ');
+    globals.forEach(function(mod) {
+      readable.push(
+        'var ' + mod + ' = require("./' +
+          mod.replace(/_/g, '.') + '");\n'
+      );
+    });
+
+    readable.push('\n  TOPLEVEL_TOPPOKI_FUNCTION = ');
+    readable.push(code);
+    readable.push('\n})()');
+    readable.push(null);
+
+    return new Promise(function (resolve, reject) {
+      var b = browserify(readable, {
+        basedir: path.join(__dirname, '..'),
+        ignoreMissing: true,
+        detectGlobals: false,
+        // Not required - we do not use packages
+        browserField: false,
+      });
+      var str = b.bundle(function (err, buff) {
+        if (err !== null) {
+          reject(err);
+        }
+        resolve(buff.toString());
+      });
+    });
+  };
+};
+
+exports._queryEval = function(selector, code, queryable) {
+  return function() {
+    var fun = new Function(
+      'element',
+
+      'var TOPLEVEL_TOPPOKI_FUNCTION;\n' + code +
+      ';\nreturn TOPLEVEL_TOPPOKI_FUNCTION(element);'
+    );
+
+    return queryable.$eval(selector, fun);
   };
 };
 

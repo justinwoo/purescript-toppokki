@@ -17,7 +17,11 @@
     "purescript-functions": "^4.0.0",
     "purescript-node-http": "^5.0.0",
     "purescript-aff-promise": "^2.0.0",
-    "purescript-node-buffer": "^5.0.0"
+    "purescript-node-buffer": "^5.0.0",
+    "purescript-argonaut-codecs": "5.1.3",
+    "purescript-web-dom": "^2.0.0",
+    "purescript-unsafe-coerce": "^4.0.0",
+    "purescript-newtype": "^3.0.0"
   },
   "devDependencies": {
     "purescript-milkis": "^6.0.1",

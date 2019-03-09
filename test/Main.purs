@@ -1,11 +1,15 @@
 module Test.Main where
 
+import Data.Argonaut.Core
+import Effect.Unsafe
 import Prelude
+import Web.DOM.Element
 
 import Control.Monad.Except (runExcept)
+import Control.Promise as Promise
 import Data.Array as A
 import Data.Either (Either(..), isLeft)
-import Data.Maybe (Maybe(..), isJust, isNothing)
+import Data.Maybe (Maybe(..), fromJust, fromMaybe, isJust, isNothing)
 import Data.String as String
 import Effect (Effect)
 import Effect.Aff (attempt)
@@ -13,10 +17,12 @@ import Effect.Class (liftEffect)
 import Effect.Ref as Ref
 import Effect.Uncurried as EU
 import Foreign as F
+import Data.Newtype
 import Node.Process (cwd)
 import Test.Unit (suite, test)
 import Test.Unit.Assert as Assert
 import Test.Unit.Main (runTest)
+import Toppoki.Inject (inject)
 import Toppokki as T
 
 main :: Effect Unit
@@ -131,4 +137,19 @@ tests dir = runTest do
       Assert.assert "`queryMany` finds elements by selector" (A.length nothings == 0)
       invalidResult <- attempt $ T.queryMany (T.Selector "invalid!") page
       Assert.assert "`queryMany` throws on invalid selector" (isLeft invalidResult)
+      T.close browser
+
+    test "can use `queryEval`" do
+      browser <- T.launch {}
+      page <- T.newPage browser
+      T.goto crashUrl page
+      text <- T.queryEval (wrap "#unique")
+                          (\elem -> inject $ pure $ tagName elem)
+                          page
+      Assert.assert "`queryEval` works" (text == "SPAN")
+
+      maybeNonExistent <- attempt $ T.queryEval (wrap "#nonexistent")
+                                    (\elem -> inject $ pure $ tagName elem)
+                                    page
+      Assert.assert "`queryEval` fails on non-existent elements"  (isLeft maybeNonExistent)
       T.close browser
