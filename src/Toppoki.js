@@ -6,7 +6,6 @@ var Readable = require("stream").Readable;
 
 // Extract all variable names starting from capital letter
 function extractDefinitions (code) {
-  code = '(' + code + ');';
   var globals = new Set();
 
   function visitor(node, descend) {
@@ -20,6 +19,15 @@ function extractDefinitions (code) {
   var walker = new UglifyJS.TreeWalker(visitor);
   UglifyJS.parse(code).walk(walker);
   return Array.from(globals);
+}
+
+function wrapTopLevel(code) {
+  return new Function(
+    'arg',
+
+    'var TOPLEVEL_TOPPOKI_FUNCTION;\n' + code +
+    ';\nreturn TOPLEVEL_TOPPOKI_FUNCTION(arg);'
+  );
 }
 
 exports.puppeteer = puppeteer;
@@ -48,8 +56,9 @@ exports._queryMany = function(selector, queryable) {
   };
 };
 
+
 exports._jsReflect = function(func) {
-  var code = unescape(func);
+  var code = '(' + func.toString() + ')';
   var globals = extractDefinitions(code);
 
   return function(){
@@ -87,14 +96,13 @@ exports._jsReflect = function(func) {
 
 exports._queryEval = function(selector, code, queryable) {
   return function() {
-    var fun = new Function(
-      'element',
+    return queryable.$eval(selector, wrapTopLevel(code));
+  };
+};
 
-      'var TOPLEVEL_TOPPOKI_FUNCTION;\n' + code +
-      ';\nreturn TOPLEVEL_TOPPOKI_FUNCTION(element);'
-    );
-
-    return queryable.$eval(selector, fun);
+exports._queryEvalMany = function(selector, code, queryable) {
+  return function() {
+    return queryable.$$eval(selector, wrapTopLevel(code));
   };
 };
 

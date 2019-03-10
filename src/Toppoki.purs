@@ -6,14 +6,14 @@ module Toppokki
        , ElementHandle
        , URL(..)
        , UserAgent(..)
-       , Selector(..)
        , LaunchOptions
        , launch
        , newPage
        , class Queryable
        , query
        , queryMany
-       , queryEval
+       , unsafeQueryEval
+       , unsafeQueryEvalMany
        , goto
        , close
        , content
@@ -62,6 +62,7 @@ import Toppoki.Inject (InjectedAff)
 import Unsafe.Coerce (unsafeCoerce)
 import Web.DOM.Element (Element)
 import Data.Argonaut.Core (Json)
+import Web.DOM.ParentNode (QuerySelector)
 
 foreign import data Puppeteer :: Type
 foreign import data Browser :: Type
@@ -74,9 +75,6 @@ derive instance newtypeURL :: Newtype URL _
 
 newtype UserAgent = UserAgent String
 derive instance newtypeUserAgent :: Newtype UserAgent _
-
-newtype Selector = Selector String
-derive instance newtypeSelector :: Newtype Selector _
 
 type LaunchOptions =
   ( headless :: Boolean
@@ -101,11 +99,11 @@ else instance queryableElementHandle :: Queryable ElementHandle
 else instance queryableClose :: (Fail (Text "Queryable class is closed")) => Queryable a
 
 -- | Query the element using `.$(selector)`
-query :: forall el. Queryable el => Selector -> el -> Aff (Maybe ElementHandle)
+query :: forall el. Queryable el => QuerySelector -> el -> Aff (Maybe ElementHandle)
 query s el = map unsafeNullOr (runPromiseAffE2 _query s el)
 
 -- | Query the element using `.$$(selector)`
-queryMany :: forall el. Queryable el => Selector -> el -> Aff (Array ElementHandle)
+queryMany :: forall el. Queryable el => QuerySelector -> el -> Aff (Array ElementHandle)
 queryMany = runPromiseAffE2 _queryMany
 
 -- `EncodeJson r` is used in the following definition because the only
@@ -119,11 +117,18 @@ queryMany = runPromiseAffE2 _queryMany
 -- | Query the element using `.$eval(selector, pageFunction)`.
 -- |
 -- | If there's no element matching `selector`, the method throws an error.
-queryEval :: forall el r. Queryable el => EncodeJson r =>
-             Selector -> (Element -> InjectedAff r) -> el -> Aff r
-queryEval sel g el = (unsafeCoerce :: Aff Json -> Aff r) do
-  jsCode <- Promise.toAffE (_jsReflect g)
-  Promise.toAffE (FU.runFn3 _queryEval sel jsCode el)
+unsafeQueryEval :: forall el r. Queryable el => EncodeJson r =>
+             QuerySelector -> (Element -> InjectedAff r) -> el -> Aff r
+unsafeQueryEval qs callback el = (unsafeCoerce :: Aff Json -> Aff r) do
+  jsCode <- Promise.toAffE (_jsReflect callback)
+  Promise.toAffE (FU.runFn3 _queryEval qs jsCode el)
+
+-- | Query the element using `.$$eval(selector, pageFunction)`.
+unsafeQueryEvalMany :: forall el r. Queryable el => EncodeJson r =>
+             QuerySelector -> (Array Element -> InjectedAff r) -> el -> Aff r
+unsafeQueryEvalMany qs callback el = (unsafeCoerce :: Aff Json -> Aff r) do
+  jsCode <- Promise.toAffE (_jsReflect callback)
+  Promise.toAffE (FU.runFn3 _queryEvalMany qs jsCode el)
 
 goto :: URL -> Page -> Aff Unit
 goto = runPromiseAffE2 _goto
@@ -232,13 +237,13 @@ pageWaitForSelector
        , hidden :: Boolean
        , timeout :: Int
        )
-  => Selector
+  => QuerySelector
   -> { | options }
   -> Page
   -> Aff ElementHandle
 pageWaitForSelector = runPromiseAffE3 _pageWaitForSelector
 
-focus :: Selector -> Page -> Aff Unit
+focus :: QuerySelector -> Page -> Aff Unit
 focus = runPromiseAffE2 _focus
 
 type_
@@ -246,14 +251,14 @@ type_
    . Row.Union options trash
        ( delay :: Int
        )
-  => Selector
+  => QuerySelector
   -> String
   -> { | options }
   -> Page
   -> Aff Unit
 type_ = runPromiseAffE4 _type
 
-click :: Selector -> Page -> Aff Unit
+click :: QuerySelector -> Page -> Aff Unit
 click = runPromiseAffE2 _click
 
 foreign import data WaitUntilOption :: Type
@@ -298,10 +303,10 @@ runPromiseAffE4 f a b c d =  Promise.toAffE $ FU.runFn4 f a b c d
 foreign import puppeteer :: Puppeteer
 foreign import _launch :: forall options. FU.Fn1 options (Effect (Promise Browser))
 foreign import _newPage :: FU.Fn1 Browser (Effect (Promise Page))
-foreign import _query :: forall el. FU.Fn2 Selector el (Effect (Promise Foreign))
-foreign import _queryMany :: forall el. FU.Fn2 Selector el (Effect (Promise (Array ElementHandle)))
-foreign import _queryEval :: forall el.
-                 FU.Fn3 Selector String el (Effect (Promise Json))
+foreign import _query :: forall el. FU.Fn2 QuerySelector el (Effect (Promise Foreign))
+foreign import _queryMany :: forall el. FU.Fn2 QuerySelector el (Effect (Promise (Array ElementHandle)))
+foreign import _queryEval :: forall el. FU.Fn3 QuerySelector String el (Effect (Promise Json))
+foreign import _queryEvalMany :: forall el. FU.Fn3 QuerySelector String el (Effect (Promise Json))
 foreign import _jsReflect :: forall a. a -> Effect (Promise String)
 foreign import _goto :: FU.Fn2 URL Page (Effect (Promise Unit))
 foreign import _close :: FU.Fn1 Browser (Effect (Promise Unit))
@@ -312,10 +317,10 @@ foreign import _setViewport :: forall options. FU.Fn2 options  Page (Effect (Pro
 foreign import _screenshot :: forall options. FU.Fn2 options Page (Effect (Promise Buffer))
 foreign import _pdf :: forall options. FU.Fn2 options Page (Effect (Promise Buffer))
 foreign import _on :: forall a. EU.EffectFn3 String (EU.EffectFn1 a Unit) Page Unit
-foreign import _pageWaitForSelector :: forall options. FU.Fn3 Selector options Page (Effect (Promise ElementHandle))
-foreign import _focus :: FU.Fn2 Selector Page (Effect (Promise Unit))
-foreign import _type :: forall options. FU.Fn4 Selector String options Page (Effect (Promise Unit))
-foreign import _click :: FU.Fn2 Selector Page (Effect (Promise Unit))
+foreign import _pageWaitForSelector :: forall options. FU.Fn3 QuerySelector options Page (Effect (Promise ElementHandle))
+foreign import _focus :: FU.Fn2 QuerySelector Page (Effect (Promise Unit))
+foreign import _type :: forall options. FU.Fn4 QuerySelector String options Page (Effect (Promise Unit))
+foreign import _click :: FU.Fn2 QuerySelector Page (Effect (Promise Unit))
 foreign import _waitForNavigation :: forall options. FU.Fn2 options Page (Effect (Promise Unit))
 foreign import _getLocationHref :: FU.Fn1 Page (Effect (Promise String))
 foreign import _unsafeEvaluateStringFunction :: FU.Fn2 String Page (Effect (Promise Foreign))
