@@ -1,10 +1,19 @@
 var path = require("path");
 var puppeteer = require("puppeteer");
-var browserify = require('browserify');
-var UglifyJS = require("uglify-js");
+var browserify = null;
+var UglifyJS = null;
+
+try {
+  browserify = require('browserify');
+  UglifyJS = require("uglify-js");
+} catch (e) {
+
+}
+
 var Readable = require("stream").Readable;
 
-// Extract all variable names starting from capital letter
+// Extract all variable names starting with capital letters.
+// Throw an error if there are free variables.
 function extractDefinitions (code) {
   var globals = new Set();
 
@@ -86,6 +95,10 @@ exports._queryMany = function(selector, queryable) {
 
 
 exports._jsReflect = function(func) {
+  if (browserify === null || UglifyJS === null) {
+    throw new Error("Toppokki internal error: to use `unsafe*` functions, run `npm install uglify-js browserify`");
+  }
+
   return function(){
     return new Promise(function (resolve, reject) {
       var code = func.toString();
