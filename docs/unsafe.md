@@ -16,7 +16,7 @@ Function passed as the second argument will be executed within the browser conte
 ```javascript
 var local = true;
 await page.$$eval(
-  '.content-list-item-name',
+  '.my-class',
   () => {
     if (typeof local == 'undefined') {
       throw new Error();
@@ -33,7 +33,7 @@ In this library these limitations are bypassed by inspecting given function's co
 
 Suppose we want to get a tag name of the first element matching a given selector.
 
-It can be done by passing `\elem -> Toppoki.Inject.inject $ pure $ tagName elem` to `unsafeQueryEval`.
+It can be done by passing `\elem -> injectPure $ tagName elem` to `unsafeQueryEval` (where `injectPure` is from `Toppoki.Inject`).
 
 `_jsReflect` will first retrieve a runtime representation of the given function using `Function.prototype.toString`:
 
