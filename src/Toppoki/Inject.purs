@@ -1,4 +1,4 @@
-module Toppoki.Inject
+module Toppokki.Inject
        ( InjectedAff
        , inject
        , injectEffect
@@ -6,19 +6,18 @@ module Toppoki.Inject
        )
 where
 
-import Control.Promise as Promise
+import Control.Promise (fromAff, Promise)
 import Effect (Effect)
 import Effect.Aff (Aff)
 import Effect.Class (liftEffect)
 import Effect.Unsafe (unsafePerformEffect)
-import Prelude (pure, (>>>))
-import Unsafe.Coerce (unsafeCoerce)
+import Prelude (pure, (>>>), Unit)
 
 -- | InjectedAff is a `Promise` executing in the browser.
-foreign import data InjectedAff :: Type -> Type
+newtype InjectedAff r = InjectedAff (Unit -> Promise r)
 
 inject :: forall r. Aff r -> InjectedAff r
-inject = Promise.fromAff >>> unsafePerformEffect >>> unsafeCoerce
+inject aff = InjectedAff (\_ -> unsafePerformEffect (fromAff aff))
 
 injectEffect :: forall r. Effect r -> InjectedAff r
 injectEffect = liftEffect >>> inject

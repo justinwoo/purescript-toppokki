@@ -1,23 +1,20 @@
 module Test.Main where
 
-import Data.Argonaut.Core
 import Data.Newtype
-import Data.Traversable
 import Data.Tuple
-import Effect.Unsafe
+import Effect.Aff
 import Prelude
-import Web.DOM.Element
-import Web.DOM.ParentNode
 
 import Control.Monad.Except (runExcept)
 import Control.Promise as Promise
 import Data.Array as A
 import Data.Array.ST as DAST
+import Data.Bifunctor (lmap)
 import Data.Either (Either(..), isLeft)
 import Data.Maybe (Maybe(..), fromJust, fromMaybe, isJust, isNothing)
 import Data.String as String
+import Data.Traversable (for_, sequence)
 import Effect (Effect)
-import Effect.Aff (attempt)
 import Effect.Class (liftEffect)
 import Effect.Ref as Ref
 import Effect.Uncurried as EU
@@ -26,10 +23,15 @@ import Node.Process (cwd)
 import Test.Unit (suite, test)
 import Test.Unit.Assert as Assert
 import Test.Unit.Main (runTest)
-import Toppoki.Inject (inject, injectEffect, injectPure)
 import Toppokki as T
+import Toppokki.Inject (inject, injectEffect, injectPure)
+import Web.DOM.Element (className, tagName, toParentNode)
 import Web.DOM.Node as WDN
 import Web.DOM.NodeList as WDNL
+import Web.DOM.ParentNode (querySelectorAll)
+import Web.HTML (window)
+import Web.HTML.HTMLDocument (title)
+import Web.HTML.Window (document)
 
 main :: Effect Unit
 main = do
@@ -253,5 +255,34 @@ tests dir = runTest do
         ("`_jsReflect`: a complex example (" <>
          show len1 <> ", " <> show len2 <> ")")
         (len1 + 1 == len2) -- +1 for <body> itself
+
+      T.close browser
+
+    test "can use `unsafeEvaluate`" do
+      browser <- T.launch {}
+      page <- T.newPage browser
+      T.goto crashUrl page
+
+      title1 <- T.unsafeEvaluate page
+               (\_ -> injectEffect
+                 (window >>= document >>= title))
+
+      title2 <- T.unsafeEvaluate page
+               (injectEffect <<< const (window >>= document >>= title))
+
+      failing <- try $ T.unsafeEvaluate page
+                 (const (injectEffect (window >>= document >>= title)))
+
+      Assert.assert
+        ("point-free style is forbidden")
+        (lmap message failing == Left ("Toppokki internal error: are you trying to use " <>
+                                       "point-free style in a callback function?  (see " <>
+                                       "docs/unsafe.md)"))
+      Assert.assert
+        ("can get window title using `unsafeEvaluate`" <> title1)
+        (title1 == "Page Title")
+      Assert.assert
+        ("can get window title using `unsafeEvaluate`" <> title2)
+        (title2 == "Page Title")
 
       T.close browser

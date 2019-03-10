@@ -1,6 +1,6 @@
-# unsafeQueryEval* functions
+# unsafe* functions
 
-`unsafeQueryEval` and `unsafeQueryEvalMany` are direct bindings to [`.$eval`](https://github.com/GoogleChrome/puppeteer/blob/master/docs/api.md#frameevalselector-pagefunction-args-1) and [`.$$eval`](https://github.com/GoogleChrome/puppeteer/blob/master/docs/api.md#frameevalselector-pagefunction-args) methods, respectively.
+`unsafeQueryEval`, `unsafeQueryEvalMany` and `unsafeEvaluate` are direct bindings to [`.$eval`](https://github.com/GoogleChrome/puppeteer/blob/master/docs/api.md#frameevalselector-pagefunction-args-1), [`.$$eval`](https://github.com/GoogleChrome/puppeteer/blob/master/docs/api.md#frameevalselector-pagefunction-args) and [`.evaluate`](https://github.com/GoogleChrome/puppeteer/blob/master/docs/api.md#pageevaluatepagefunction-args) methods, respectively.
 
 In JS, you are supposed to write something like this:
 
@@ -66,6 +66,38 @@ Of course this method is not perfect since it relies on unsafe assumptions about
 
 ## Limitations
 
-`browserify`ing is relatively slow.
+1. `browserify`ing is relatively slow.
 
-Accessing purescript values defined locally is still impossible and will result in a runtime error (this perfectly matches JS behavior). Only using what is directly imported from other modules is allowed.
+2. Accessing purescript values defined locally is still impossible and will result in a runtime error (this perfectly matches JS behavior). Only using what is directly imported from other modules is allowed.
+
+3. Note that it is impossible to use `const` to hide unused argument in `unsafe*` callbacks.
+
+```purescript
+-- good
+(\_ -> injectEffect
+  (window >>= document >>= title))
+
+-- bad
+(const $ injectEffect
+  (window >>= document >>= title))
+```
+
+It is clear why the latter does not work - because `Function.prototype.toString` returns the "inner part" of the `const` definition instead of the needed function. The following code may help to understand what's going on:
+
+```
+> var f = function (x) { return function(y) { return x; } } // `const` equivalent
+> f.toString()
+'function (x) { return function(y) { return x; } }'
+> f(function(z) { return z; }).toString()
+'function(y) { return x; }'
+```
+
+However, using `const` combined with `compose` is acceptable:
+
+```purescript
+(injectEffect <<< const (window >>= document >>= title))
+```
+
+There is a built-in detection of incorrect `const` usage (see `extractDefinitions`). When there are free variables which appear to be function parameters erased during evaluation, the user will see an error message:
+
+> Toppokki internal error: are you trying to use point-free style in a callback function? (see docs/unsafe.md)

@@ -28,6 +28,7 @@
     "purescript-test-unit": "^14.0.0",
     "purescript-node-process": "^6.0.0",
     "purescript-transformers": "^4.0.0",
-    "purescript-foreign": "^5.0.0"
+    "purescript-foreign": "^5.0.0",
+    "purescript-web-html": "^2.0.0"
   }
 }

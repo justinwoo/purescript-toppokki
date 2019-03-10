@@ -14,6 +14,8 @@ module Toppokki
        , queryMany
        , unsafeQueryEval
        , unsafeQueryEvalMany
+       , class Evaluate
+       , unsafeEvaluate
        , goto
        , close
        , content
@@ -44,6 +46,7 @@ where
 import Control.Monad.Except (runExcept)
 import Control.Promise (Promise)
 import Control.Promise as Promise
+import Data.Argonaut.Core (Json)
 import Data.Argonaut.Encode (class EncodeJson)
 import Data.Either (Either(..))
 import Data.Function.Uncurried as FU
@@ -58,16 +61,17 @@ import Node.Buffer (Buffer)
 import Prelude
 import Prim.Row as Row
 import Prim.TypeError (class Fail, Text)
-import Toppoki.Inject (InjectedAff)
+import Toppokki.Inject (InjectedAff)
 import Unsafe.Coerce (unsafeCoerce)
 import Web.DOM.Element (Element)
-import Data.Argonaut.Core (Json)
 import Web.DOM.ParentNode (QuerySelector)
 
 foreign import data Puppeteer :: Type
 foreign import data Browser :: Type
 foreign import data Page :: Type
 foreign import data Frame :: Type
+foreign import data Worker :: Type
+foreign import data ExecutionContext :: Type
 foreign import data ElementHandle :: Type
 
 newtype URL = URL String
@@ -89,6 +93,20 @@ launch = runPromiseAffE1 _launch
 
 newPage :: Browser -> Aff Page
 newPage = runPromiseAffE1 _newPage
+
+class Evaluate a
+
+instance evaluatePage :: Evaluate Page
+else instance evaluateWorker :: Evaluate Worker
+else instance evaluateFrame :: Evaluate Frame
+else instance evaluateExecutionContext :: Evaluate ExecutionContext
+else instance evaluteClose :: (Fail (Text "Evaluate class is closed")) => Evaluate a
+
+unsafeEvaluate :: forall ctx r. Evaluate ctx => EncodeJson r =>
+            ctx -> (Unit -> InjectedAff r) -> Aff r
+unsafeEvaluate ctx callback = (unsafeCoerce :: Aff Json -> Aff r) do
+  jsCode <- Promise.toAffE (_jsReflect callback)
+  Promise.toAffE (FU.runFn2 _evaluate jsCode ctx)
 
 -- | Values which can be queried by selectors.
 class Queryable el
@@ -307,6 +325,7 @@ foreign import _query :: forall el. FU.Fn2 QuerySelector el (Effect (Promise For
 foreign import _queryMany :: forall el. FU.Fn2 QuerySelector el (Effect (Promise (Array ElementHandle)))
 foreign import _queryEval :: forall el. FU.Fn3 QuerySelector String el (Effect (Promise Json))
 foreign import _queryEvalMany :: forall el. FU.Fn3 QuerySelector String el (Effect (Promise Json))
+foreign import _evaluate :: forall ctx. FU.Fn2 String ctx (Effect (Promise Json))
 foreign import _jsReflect :: forall a. a -> Effect (Promise String)
 foreign import _goto :: FU.Fn2 URL Page (Effect (Promise Unit))
 foreign import _close :: FU.Fn1 Browser (Effect (Promise Unit))
