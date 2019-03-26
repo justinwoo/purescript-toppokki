@@ -1,25 +1,23 @@
 module Test.Main where
 
-import Data.Newtype
-import Data.Tuple
-import Effect.Aff
-import Prelude
-
 import Control.Monad.Except (runExcept)
-import Control.Promise as Promise
 import Data.Array as A
 import Data.Array.ST as DAST
 import Data.Bifunctor (lmap)
 import Data.Either (Either(..), isLeft)
-import Data.Maybe (Maybe(..), fromJust, fromMaybe, isJust, isNothing)
+import Data.Maybe (Maybe(..), isJust, isNothing)
+import Data.Newtype (wrap)
 import Data.String as String
 import Data.Traversable (for_, sequence)
+import Data.Tuple (Tuple(..))
 import Effect (Effect)
+import Effect.Aff (attempt, message, try)
 import Effect.Class (liftEffect)
 import Effect.Ref as Ref
 import Effect.Uncurried as EU
 import Foreign as F
 import Node.Process (cwd)
+import Prelude
 import Test.Unit (suite, test)
 import Test.Unit.Assert as Assert
 import Test.Unit.Main (runTest)
@@ -157,9 +155,9 @@ tests dir = runTest do
       browser <- T.launch {}
       page <- T.newPage browser
       T.goto crashUrl page
-      text <- T.unsafeQueryEval (wrap "#unique")
-                          (\elem -> inject $ pure $ tagName elem)
-                          page
+      text <- F.unsafeFromForeign <$> T.unsafeQueryEval (wrap "#unique")
+              (\elem -> inject $ pure $ tagName elem)
+              page
       Assert.assert "`unsafeQueryEval` works" (text == "SPAN")
 
       maybeNonExistent <- attempt $ T.unsafeQueryEval (wrap "#nonexistent")
@@ -183,7 +181,7 @@ tests dir = runTest do
       page <- T.newPage browser
       T.goto crashUrl page
 
-      tagNames <- T.unsafeQueryEvalMany
+      tagNames <- F.unsafeFromForeign <$> T.unsafeQueryEvalMany
                   (wrap ".something")
                   (\elems -> injectEffect $ sequence $ map className elems)
                   page
@@ -191,7 +189,7 @@ tests dir = runTest do
         "`unsafeQueryEvalMany` works"
         (tagNames == ["something", "something", "something"])
 
-      nonexistentCount <- T.unsafeQueryEvalMany (wrap "#nonexistent")
+      nonexistentCount <- F.unsafeFromForeign <$> T.unsafeQueryEvalMany (wrap "#nonexistent")
                           (\elems -> inject $ pure $ A.length elems)
                           page
       Assert.assert
@@ -212,17 +210,17 @@ tests dir = runTest do
       page <- T.newPage browser
       T.goto crashUrl page
 
-      value1 <- T.unsafeQueryEvalMany (wrap "#unique")
-                 (\elems -> inject do
-                     let res1 = "val"
-                     let res2 = "ue1"
-                     pure $ res1 <> res2)
-                 page
+      value1 <- F.unsafeFromForeign <$> T.unsafeQueryEvalMany (wrap "#unique")
+                (\elems -> inject do
+                    let res1 = "val"
+                    let res2 = "ue1"
+                    pure $ res1 <> res2)
+                page
       Assert.assert
         "`_jsReflect` does not break with local variable bindings"
         (value1 == "value1")
 
-      value2 <- T.unsafeQueryEval (wrap "#unique")
+      value2 <- F.unsafeFromForeign <$> T.unsafeQueryEval (wrap "#unique")
                 (\_ -> inject do
                     let res = \x -> x
                     pure (res "value2"))
@@ -232,23 +230,23 @@ tests dir = runTest do
         (value2 == "value2")
 
       -- A complex example
-      len1 <- T.unsafeQueryEval (wrap "body")
-             (\body -> injectEffect do
-                 nodeArray <- (querySelectorAll (wrap "*") >=> WDNL.toArray)
-                              (toParentNode body)
-                 taggedNodes <- sequence $
-                   nodeArray <#> \node ->
-                   WDN.hasChildNodes node <#> \hasChildren ->
-                   Tuple hasChildren node
-                 pure $ A.length $ DAST.run do
-                   ref <- DAST.empty
-                   for_ taggedNodes
-                     (\(Tuple hasChildren node) ->
-                       when hasChildren do
-                         void (DAST.push 0 ref))
-                   pure ref)
-             page
-      len2 <- T.unsafeQueryEvalMany (wrap "* > * *")
+      len1 <- F.unsafeFromForeign <$> T.unsafeQueryEval (wrap "body")
+              (\body -> injectEffect do
+                  nodeArray <- (querySelectorAll (wrap "*") >=> WDNL.toArray)
+                               (toParentNode body)
+                  taggedNodes <- sequence $
+                    nodeArray <#> \node ->
+                    WDN.hasChildNodes node <#> \hasChildren ->
+                    Tuple hasChildren node
+                  pure $ A.length $ DAST.run do
+                    ref <- DAST.empty
+                    for_ taggedNodes
+                      (\(Tuple hasChildren node) ->
+                        when hasChildren do
+                          void (DAST.push 0 ref))
+                    pure ref)
+              page
+      len2 <- F.unsafeFromForeign <$> T.unsafeQueryEvalMany (wrap "* > * *")
               (injectPure <<< A.length)
               page
       Assert.assert
@@ -263,21 +261,22 @@ tests dir = runTest do
       page <- T.newPage browser
       T.goto crashUrl page
 
-      title1 <- T.unsafeEvaluate page
-               (\_ -> injectEffect
-                 (window >>= document >>= title))
+      title1 <- F.unsafeFromForeign <$> T.unsafeEvaluate page
+                (\_ -> injectEffect
+                       (window >>= document >>= title))
 
-      title2 <- T.unsafeEvaluate page
-               (injectEffect <<< const (window >>= document >>= title))
+      title2 <- F.unsafeFromForeign <$> T.unsafeEvaluate page
+                (injectEffect <<< const (window >>= document >>= title))
 
-      failing <- try $ T.unsafeEvaluate page
+      failing <- (map <<< map) F.unsafeFromForeign <$> try $ T.unsafeEvaluate page
                  (const (injectEffect (window >>= document >>= title)))
 
       Assert.assert
         ("point-free style is forbidden")
-        (lmap message failing == Left ("Toppokki internal error: are you trying to use " <>
-                                       "point-free style in a callback function?  (see " <>
-                                       "docs/unsafe.md)"))
+        ((lmap message failing :: Either String String) ==
+         Left ("Toppokki internal error: are you trying to use " <>
+               "point-free style in a callback function?  (see " <>
+               "docs/unsafe.md)"))
       Assert.assert
         ("can get window title using `unsafeEvaluate`" <> title1)
         (title1 == "Page Title")

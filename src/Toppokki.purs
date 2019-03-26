@@ -47,7 +47,6 @@ import Control.Monad.Except (runExcept)
 import Control.Promise (Promise)
 import Control.Promise as Promise
 import Data.Argonaut.Core (Json)
-import Data.Argonaut.Encode (class EncodeJson)
 import Data.Either (Either(..))
 import Data.Function.Uncurried as FU
 import Data.Maybe (Maybe(..))
@@ -102,9 +101,9 @@ else instance evaluateFrame :: Evaluate Frame
 else instance evaluateExecutionContext :: Evaluate ExecutionContext
 else instance evaluteClose :: (Fail (Text "Evaluate class is closed")) => Evaluate a
 
-unsafeEvaluate :: forall ctx r. Evaluate ctx => EncodeJson r =>
-            ctx -> (Unit -> InjectedAff r) -> Aff r
-unsafeEvaluate ctx callback = (unsafeCoerce :: Aff Json -> Aff r) do
+unsafeEvaluate :: forall ctx r. Evaluate ctx =>
+            ctx -> (Unit -> InjectedAff r) -> Aff Foreign
+unsafeEvaluate ctx callback = do
   jsCode <- Promise.toAffE (_jsReflect callback)
   Promise.toAffE (FU.runFn2 _evaluate jsCode ctx)
 
@@ -124,27 +123,19 @@ query s el = map unsafeNullOr (runPromiseAffE2 _query s el)
 queryMany :: forall el. Queryable el => QuerySelector -> el -> Aff (Array ElementHandle)
 queryMany = runPromiseAffE2 _queryMany
 
--- `EncodeJson r` is used in the following definition because the only
--- restriction applying to `r` is that is should be serializable.
--- Note that the function argument of `queryEval` and `queryEvalMany` will be
--- evaluated in the browser context.
--- `unsafeCoerce` shows that we *believe* that puppeteer does not alter
--- the values when copying them from the browser runtime *if* these values are
--- of type `Json`.
-
 -- | Query the element using `.$eval(selector, pageFunction)`.
 -- |
 -- | If there's no element matching `selector`, the method throws an error.
-unsafeQueryEval :: forall el r. Queryable el => EncodeJson r =>
-             QuerySelector -> (Element -> InjectedAff r) -> el -> Aff r
-unsafeQueryEval qs callback el = (unsafeCoerce :: Aff Json -> Aff r) do
+unsafeQueryEval :: forall el r. Queryable el =>
+             QuerySelector -> (Element -> InjectedAff r) -> el -> Aff Foreign
+unsafeQueryEval qs callback el = do
   jsCode <- Promise.toAffE (_jsReflect callback)
   Promise.toAffE (FU.runFn3 _queryEval qs jsCode el)
 
 -- | Query the element using `.$$eval(selector, pageFunction)`.
-unsafeQueryEvalMany :: forall el r. Queryable el => EncodeJson r =>
-             QuerySelector -> (Array Element -> InjectedAff r) -> el -> Aff r
-unsafeQueryEvalMany qs callback el = (unsafeCoerce :: Aff Json -> Aff r) do
+unsafeQueryEvalMany :: forall el r. Queryable el =>
+             QuerySelector -> (Array Element -> InjectedAff r) -> el -> Aff Foreign
+unsafeQueryEvalMany qs callback el = do
   jsCode <- Promise.toAffE (_jsReflect callback)
   Promise.toAffE (FU.runFn3 _queryEvalMany qs jsCode el)
 
@@ -323,9 +314,9 @@ foreign import _launch :: forall options. FU.Fn1 options (Effect (Promise Browse
 foreign import _newPage :: FU.Fn1 Browser (Effect (Promise Page))
 foreign import _query :: forall el. FU.Fn2 QuerySelector el (Effect (Promise Foreign))
 foreign import _queryMany :: forall el. FU.Fn2 QuerySelector el (Effect (Promise (Array ElementHandle)))
-foreign import _queryEval :: forall el. FU.Fn3 QuerySelector String el (Effect (Promise Json))
-foreign import _queryEvalMany :: forall el. FU.Fn3 QuerySelector String el (Effect (Promise Json))
-foreign import _evaluate :: forall ctx. FU.Fn2 String ctx (Effect (Promise Json))
+foreign import _queryEval :: forall el. FU.Fn3 QuerySelector String el (Effect (Promise Foreign))
+foreign import _queryEvalMany :: forall el. FU.Fn3 QuerySelector String el (Effect (Promise Foreign))
+foreign import _evaluate :: forall ctx. FU.Fn2 String ctx (Effect (Promise Foreign))
 foreign import _jsReflect :: forall a. a -> Effect (Promise String)
 foreign import _goto :: FU.Fn2 URL Page (Effect (Promise Unit))
 foreign import _close :: FU.Fn1 Browser (Effect (Promise Unit))
