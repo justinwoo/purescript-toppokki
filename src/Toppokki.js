@@ -210,7 +210,7 @@ exports._on = function(event, callback, page) {
   return page.on(event, callback);
 };
 
-exports._pageWaitForSelector = function(selector, options, page) {
+exports._waitForSelector = function(selector, options, page) {
   return function() {
     return page.waitForSelector(selector, options);
   };

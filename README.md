@@ -4,7 +4,7 @@
 
 A binding to [puppeteer](https://github.com/GoogleChrome/puppeteer) to drive headless Chrome.
 
-This module is "incomplete" (but useful for regular work projects), and you can help by submitting PRs. You may find that `goto`, `pageWaitForSelector`, `click`, and `unsafeEvaluateStringFunction` already provide the functionality you need.
+This module is "incomplete" (but useful for regular work projects), and you can help by submitting PRs. You may find that `goto`, `waitForSelector`, `click`, and `unsafeEvaluateStringFunction` already provide the functionality you need.
 
 Named for glorious Tteok-bokki.
 
@@ -47,7 +47,7 @@ downloadIconIfNotExist browser existing name =
       name' = S.replace (S.Pattern " ") (S.Replacement "+") name
       pageURL = "https://duckduckgo.com/?iax=images&ia=images&q=" <> name' <> "+anime+wiki"
     T.goto (T.URL pageURL) page
-    _ <- T.pageWaitForSelector (T.Selector ".tile--img__img") {} page
+    _ <- T.waitForSelector (T.Selector ".tile--img__img") {} page
     result <- T.unsafeEvaluateStringFunction "document.querySelector('.tile--img__img').src" page
     case JSON.read result of
       Right (url :: String) -> do
@@ -210,7 +210,7 @@ downloadIconIfNotExist browser existing name =
 | waitForNavigation([options])                               | waitForNavigation                            |
 | waitForRequest(urlOrPredicate[, options])                  |                                              |
 | waitForResponse(urlOrPredicate[, options])                 |                                              |
-| waitForSelector(selector[, options])                       | pageWaitForSelector                          |
+| waitForSelector(selector[, options])                       | waitForSelector                              |
 | waitForXPath(xpath[, options])                             |                                              |
 | workers()                                                  |                                              |
 
@@ -313,7 +313,7 @@ downloadIconIfNotExist browser existing name =
 | waitFor(selectorOrFunctionOrTimeout[, options[, ...args]]) |                     |
 | waitForFunction(pageFunction[, options[, ...args]])        |                     |
 | waitForNavigation([options])                               |                     |
-| waitForSelector(selector[, options])                       |                     |
+| waitForSelector(selector[, options])                       | waitForSelector     |
 | waitForXPath(xpath[, options])                             |                     |
 
 ### class: ExecutionContext

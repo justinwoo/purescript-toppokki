@@ -70,7 +70,7 @@ tests dir = runTest do
       ref <- liftEffect $ Ref.new Nothing
       liftEffect $ T.onPageError (EU.mkEffectFn1 $ (Ref.write <@> ref) <<< Just) page
       T.goto crashUrl page
-      _ <- T.pageWaitForSelector (wrap "h1") {} page
+      _ <- T.waitForSelector (wrap "h1") {} page
       T.close browser
 
     test "can get page title" do

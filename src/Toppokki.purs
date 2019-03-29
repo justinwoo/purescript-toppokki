@@ -31,7 +31,8 @@ module Toppokki
        , pdf
        , onPageError
        , onLoad
-       , pageWaitForSelector
+       , class WaitForSelector
+       , waitForSelector
        , focus
        , type_
        , click
@@ -99,7 +100,7 @@ instance evaluatePage :: Evaluate Page
 else instance evaluateWorker :: Evaluate Worker
 else instance evaluateFrame :: Evaluate Frame
 else instance evaluateExecutionContext :: Evaluate ExecutionContext
-else instance evaluteClose :: (Fail (Text "Evaluate class is closed")) => Evaluate a
+else instance evaluateClose :: (Fail (Text "Evaluate class is closed")) => Evaluate a
 
 unsafeEvaluate :: forall ctx r. Evaluate ctx =>
             ctx -> (Unit -> InjectedAff r) -> Aff Foreign
@@ -239,18 +240,27 @@ onPageError = EU.runEffectFn3 _on "pageerror"
 onLoad :: EU.EffectFn1 Unit Unit -> Page -> Effect Unit
 onLoad = EU.runEffectFn3 _on "load"
 
-pageWaitForSelector
-  :: forall options trash
+
+class WaitForSelector a
+
+instance waitForSelectorPage :: WaitForSelector Page
+else instance waitForSelectorFrame :: WaitForSelector Frame
+else instance waitForSelectorClose :: (Fail (Text "WaitForSelector class is closed")) => WaitForSelector a
+
+waitForSelector
+  :: forall options trash a
    . Row.Union options trash
        ( visible :: Boolean
        , hidden :: Boolean
        , timeout :: Int
        )
+  => WaitForSelector a
   => QuerySelector
   -> { | options }
-  -> Page
+  -> a
   -> Aff ElementHandle
-pageWaitForSelector = runPromiseAffE3 _pageWaitForSelector
+waitForSelector =
+  runPromiseAffE3 _waitForSelector
 
 focus :: QuerySelector -> Page -> Aff Unit
 focus = runPromiseAffE2 _focus
@@ -327,7 +337,7 @@ foreign import _setViewport :: forall options. FU.Fn2 options  Page (Effect (Pro
 foreign import _screenshot :: forall options. FU.Fn2 options Page (Effect (Promise Buffer))
 foreign import _pdf :: forall options. FU.Fn2 options Page (Effect (Promise Buffer))
 foreign import _on :: forall a. EU.EffectFn3 String (EU.EffectFn1 a Unit) Page Unit
-foreign import _pageWaitForSelector :: forall options. FU.Fn3 QuerySelector options Page (Effect (Promise ElementHandle))
+foreign import _waitForSelector :: forall options p. FU.Fn3 QuerySelector options p (Effect (Promise ElementHandle))
 foreign import _focus :: FU.Fn2 QuerySelector Page (Effect (Promise Unit))
 foreign import _type :: forall options. FU.Fn4 QuerySelector String options Page (Effect (Promise Unit))
 foreign import _click :: FU.Fn2 QuerySelector Page (Effect (Promise Unit))
