@@ -152,6 +152,12 @@ foreign import data WaitUntilOption :: Type
 networkIdle :: WaitUntilOption
 networkIdle = unsafeCoerce $ "networkidle"
 
+networkIdle0 :: WaitUntilOption
+networkIdle0 = unsafeCoerce $ "networkidle0"
+
+networkIdle2 :: WaitUntilOption
+networkIdle2 = unsafeCoerce $ "networkidle2"
+
 waitForNavigation
   :: forall options trash
    . Row.Union options trash
