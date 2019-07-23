@@ -54,7 +54,7 @@ Then it will extract free variables' names using  `extractDefinitions`:
   'Web_DOM_Element' ]
 ```
 
-(`extractDefinitions` uses `TreeWalker` from `uglify-js` to traverse the AST).
+(`extractDefinitions` uses `TreeWalker` from `uglify-js@2` to traverse the AST).
 
 After that, it will trivially map these names to subdirectories of `./output/`, generate some wrapping code and feed it to `browserify`.
 
@@ -70,7 +70,7 @@ Of course this method is not perfect since it relies on unsafe assumptions about
 
 2. Accessing purescript values defined locally is still impossible and will result in a runtime error (this perfectly matches JS behavior). Only using what is directly imported from other modules is allowed.
 
-3. Note that it is impossible to use `const` to hide unused argument in `unsafe*` callbacks.
+3. It is impossible to use `const` to hide unused argument in `unsafe*` callbacks.
 
 ```purescript
 -- good
@@ -90,12 +90,6 @@ It is clear why the latter does not work - because `Function.prototype.toString`
 'function (x) { return function(y) { return x; } }'
 > f(function(z) { return z; }).toString()
 'function(y) { return x; }'
-```
-
-However, using `const` combined with `compose` is acceptable:
-
-```purescript
-(injectEffect <<< const (window >>= document >>= title))
 ```
 
 There is a built-in detection of incorrect `const` usage (see `extractDefinitions`). When there are free variables which appear to be function parameters erased during evaluation, the user will see an error message:

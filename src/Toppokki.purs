@@ -47,7 +47,6 @@ where
 import Control.Monad.Except (runExcept)
 import Control.Promise (Promise)
 import Control.Promise as Promise
-import Data.Argonaut.Core (Json)
 import Data.Either (Either(..))
 import Data.Function.Uncurried as FU
 import Data.Maybe (Maybe(..))
@@ -128,14 +127,14 @@ queryMany = runPromiseAffE2 _queryMany
 -- |
 -- | If there's no element matching `selector`, the method throws an error.
 unsafeQueryEval :: forall el r. Queryable el =>
-             QuerySelector -> (Element -> InjectedAff r) -> el -> Aff Foreign
+                   QuerySelector -> (Element -> InjectedAff r) -> el -> Aff Foreign
 unsafeQueryEval qs callback el = do
   jsCode <- Promise.toAffE (_jsReflect callback)
   Promise.toAffE (FU.runFn3 _queryEval qs jsCode el)
 
 -- | Query the element using `.$$eval(selector, pageFunction)`.
 unsafeQueryEvalMany :: forall el r. Queryable el =>
-             QuerySelector -> (Array Element -> InjectedAff r) -> el -> Aff Foreign
+                       QuerySelector -> (Array Element -> InjectedAff r) -> el -> Aff Foreign
 unsafeQueryEvalMany qs callback el = do
   jsCode <- Promise.toAffE (_jsReflect callback)
   Promise.toAffE (FU.runFn3 _queryEvalMany qs jsCode el)

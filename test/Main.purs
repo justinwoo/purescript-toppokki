@@ -121,12 +121,10 @@ tests dir = runTest do
       Assert.assert "`queryMany` throws on invalid selector" (isLeft invalidResult)
 
       let message = "`query` is able to query `ElementHandle`s"
-      T.query (wrap "#outer-container") page >>=
-      case _ of
+      T.query (wrap "#outer-container") page >>= case _ of
         Nothing -> Assert.assert message false
         Just outer -> do
-          T.query (wrap "#middle-container") outer >>=
-          case _ of
+          T.query (wrap "#middle-container") outer >>= case _ of
             Nothing -> Assert.assert message false
             Just middle -> do
               inner <- T.query (wrap "#inner-container") middle
@@ -262,26 +260,30 @@ tests dir = runTest do
       T.goto crashUrl page
 
       title1 <- F.unsafeFromForeign <$> T.unsafeEvaluate page
-                (\_ -> injectEffect
-                       (window >>= document >>= title))
+                (\_ -> injectEffect (window >>= document >>= title))
 
-      title2 <- F.unsafeFromForeign <$> T.unsafeEvaluate page
-                (injectEffect <<< const (window >>= document >>= title))
+      failing1 <- (map <<< map) F.unsafeFromForeign <$> try $ T.unsafeEvaluate page
+                  (injectEffect <<< const (window >>= document >>= title))
 
-      failing <- (map <<< map) F.unsafeFromForeign <$> try $ T.unsafeEvaluate page
-                 (const (injectEffect (window >>= document >>= title)))
+      failing2 <- (map <<< map) F.unsafeFromForeign <$> try $ T.unsafeEvaluate page
+                  (const (injectEffect (window >>= document >>= title)))
 
       Assert.assert
-        ("point-free style is forbidden")
-        ((lmap message failing :: Either String String) ==
+        ("point-free style is forbidden #0")
+        ((lmap message failing1 :: Either String String) ==
          Left ("Toppokki internal error: are you trying to use " <>
                "point-free style in a callback function?  (see " <>
                "docs/unsafe.md)"))
+
+      Assert.assert
+        ("point-free style is forbidden #1")
+        ((lmap message failing2 :: Either String String) ==
+         Left ("Toppokki internal error: are you trying to use " <>
+               "point-free style in a callback function?  (see " <>
+               "docs/unsafe.md)"))
+
       Assert.assert
         ("can get window title using `unsafeEvaluate`" <> title1)
         (title1 == "Page Title")
-      Assert.assert
-        ("can get window title using `unsafeEvaluate`" <> title2)
-        (title2 == "Page Title")
 
       T.close browser

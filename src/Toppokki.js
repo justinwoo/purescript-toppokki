@@ -28,7 +28,7 @@ function extractDefinitions (code) {
           globals.add(node.name);
         }
       } else {
-        if (node.unmangleable()) {
+        if (node.undeclared()) {
           throw new Error("Toppokki internal error: are you trying to use " +
                           "point-free style in a callback function?  (see " +
                           "docs/unsafe.md)");
@@ -96,7 +96,7 @@ exports._queryMany = function(selector, queryable) {
 
 exports._jsReflect = function(func) {
   if (browserify === null || UglifyJS === null) {
-    throw new Error("Toppokki internal error: to use `unsafe*` functions, run `npm install uglify-js browserify`");
+    throw new Error("Toppokki internal error: to use `unsafe*` functions, run `npm install uglify-js@2 browserify`");
   }
 
   return function(){

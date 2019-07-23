@@ -60,6 +60,8 @@ downloadIconIfNotExist browser existing name =
 
 ## API
 
+Check out [the docs for `unsafe*` functions](docs/unsafe.md) before you use them.
+
 ### class: Puppeteer
 
 | puppeteer                       | Toppokki |                   |        |
