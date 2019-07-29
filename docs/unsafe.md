@@ -1,6 +1,6 @@
-# unsafe* functions
+# *ViaBrowserify functions
 
-`unsafeQueryEval`, `unsafeQueryEvalMany` and `unsafeEvaluate` are direct bindings to [`.$eval`](https://github.com/GoogleChrome/puppeteer/blob/master/docs/api.md#frameevalselector-pagefunction-args-1), [`.$$eval`](https://github.com/GoogleChrome/puppeteer/blob/master/docs/api.md#frameevalselector-pagefunction-args) and [`.evaluate`](https://github.com/GoogleChrome/puppeteer/blob/master/docs/api.md#pageevaluatepagefunction-args) methods, respectively.
+`queryEvalViaBrowserify`, `queryEvalManyViaBrowserify` and `evalViaBrowserify` are direct bindings to [`.$eval`](https://github.com/GoogleChrome/puppeteer/blob/master/docs/api.md#frameevalselector-pagefunction-args-1), [`.$$eval`](https://github.com/GoogleChrome/puppeteer/blob/master/docs/api.md#frameevalselector-pagefunction-args) and [`.evaluate`](https://github.com/GoogleChrome/puppeteer/blob/master/docs/api.md#pageevaluatepagefunction-args) methods, respectively.
 
 In JS, you are supposed to write something like this:
 
@@ -29,7 +29,7 @@ This is the reason why PS bindings to functions like `$$eval` can't be implement
 
 In this library these limitations are bypassed by inspecting given function's code and inserting all the necessary runtime dependencies using `browserify` before actually passing the function as a callback.
 
-`Toppoki.js` defines `_jsReflect :: forall a. a -> Effect (Promise String)`, which is not exported. This function accepts a purescript value and returns its bundled equivalent which can be injected into the browser. Let's see how it is possible.
+`Unsafe.js` defines `_jsReflect :: forall a. a -> Effect (Promise String)`, which is not exported. This function accepts a purescript value and returns its bundled equivalent which can be injected into the browser. Let's see how it is possible.
 
 Suppose we want to get a tag name of the first element matching a given selector.
 
@@ -45,7 +45,7 @@ function (elem) {
 }
 ```
 
-Then it will extract free variables' names using  `extractDefinitions`:
+Then it will extract free variables' names using  `extractDefinitions` from `Unsafe.js`:
 
 ```javascript
 [ 'Toppoki_Inject',
@@ -92,6 +92,6 @@ It is clear why the latter does not work - because `Function.prototype.toString`
 'function(y) { return x; }'
 ```
 
-There is a built-in detection of incorrect `const` usage (see `extractDefinitions`). When there are free variables which appear to be function parameters erased during evaluation, the user will see an error message:
+There is a built-in detection of incorrect `const` usage (see how `extractDefinitions` is defined). When there are free variables which appear to be function parameters erased during evaluation, the user will see an error message:
 
 > Toppokki internal error: are you trying to use point-free style in a callback function? (see docs/unsafe.md)

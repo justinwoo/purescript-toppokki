@@ -60,7 +60,7 @@ downloadIconIfNotExist browser existing name =
 
 ## API
 
-Check out [the docs for `unsafe*` functions](docs/unsafe.md) before you use them.
+Check out [the docs for `*ViaBrowserify` functions](docs/unsafe.md) before you use them.
 
 ### class: Puppeteer
 
@@ -126,104 +126,104 @@ Check out [the docs for `unsafe*` functions](docs/unsafe.md) before you use them
 
 ### class: Page
 
-| puppeteer                                                  | Toppokki                                     |
-|------------------------------------------------------------|----------------------------------------------|
-| event: 'close'                                             |                                              |
-| event: 'console'                                           |                                              |
-| event: 'dialog'                                            |                                              |
-| event: 'domcontentloaded'                                  |                                              |
-| event: 'error'                                             |                                              |
-| event: 'frameattached'                                     |                                              |
-| event: 'framedetached'                                     |                                              |
-| event: 'framenavigated'                                    |                                              |
-| event: 'load'                                              |                                              |
-| event: 'metrics'                                           |                                              |
-| event: 'pageerror'                                         |                                              |
-| event: 'popup'                                             |                                              |
-| event: 'request'                                           |                                              |
-| event: 'requestfailed'                                     |                                              |
-| event: 'requestfinished'                                   |                                              |
-| event: 'response'                                          |                                              |
-| event: 'workercreated'                                     |                                              |
-| event: 'workerdestroyed'                                   |                                              |
-| $(selector)                                                | query                                        |
-| $$(selector)                                               | queryMany                                    |
-| $$eval(selector, pageFunction[, ...args])                  | unsafeQueryEvalMany                          |
-| $eval(selector, pageFunction[, ...args])                   | unsafeQueryEval                              |
-| $x(expression)                                             |                                              |
-| accessibility                                              |                                              |
-| addScriptTag(options)                                      |                                              |
-| addStyleTag(options)                                       |                                              |
-| authenticate(credentials)                                  |                                              |
-| bringToFront()                                             |                                              |
-| browser()                                                  |                                              |
-| browserContext()                                           |                                              |
-| click(selector[, options])                                 | click                                        |
-| close([options])                                           |                                              |
-| content()                                                  | content                                      |
-| cookies([...urls])                                         |                                              |
-| coverage                                                   |                                              |
-| deleteCookie(...cookies)                                   |                                              |
-| emulate(options)                                           |                                              |
-| emulateMedia(mediaType)                                    |                                              |
-| evaluate(pageFunction[, ...args])                          | unsafeEvaluate, unsafeEvaluateStringFunction |
-| evaluateHandle(pageFunction[, ...args])                    |                                              |
-| evaluateOnNewDocument(pageFunction[, ...args])             |                                              |
-| exposeFunction(name, puppeteerFunction)                    |                                              |
-| focus(selector)                                            | focus                                        |
-| frames()                                                   |                                              |
-| goBack([options])                                          |                                              |
-| goForward([options])                                       |                                              |
-| goto(url[, options])                                       | goto                                         |
-| hover(selector)                                            |                                              |
-| isClosed()                                                 |                                              |
-| keyboard                                                   |                                              |
-| mainFrame()                                                |                                              |
-| metrics()                                                  |                                              |
-| mouse                                                      |                                              |
-| pdf([options])                                             | pdf                                          |
-| queryObjects(prototypeHandle)                              |                                              |
-| reload([options])                                          |                                              |
-| screenshot([options])                                      | screenshot                                   |
-| select(selector, ...values)                                |                                              |
-| setBypassCSP(enabled)                                      |                                              |
-| setCacheEnabled([enabled])                                 |                                              |
-| setContent(html[, options])                                |                                              |
-| setCookie(...cookies)                                      |                                              |
-| setDefaultNavigationTimeout(timeout)                       |                                              |
-| setDefaultTimeout(timeout)                                 |                                              |
-| setExtraHTTPHeaders(headers)                               |                                              |
-| setGeolocation(options)                                    |                                              |
-| setJavaScriptEnabled(enabled)                              |                                              |
-| setOfflineMode(enabled)                                    |                                              |
-| setRequestInterception(value)                              |                                              |
-| setUserAgent(userAgent)                                    |                                              |
-| setViewport(viewport)                                      | setViewport                                  |
-| tap(selector)                                              |                                              |
-| target()                                                   |                                              |
-| title()                                                    | title                                        |
-| touchscreen                                                |                                              |
-| tracing                                                    |                                              |
-| type(selector, text[, options])                            |                                              |
-| url()                                                      |                                              |
-| viewport()                                                 |                                              |
-| waitFor(selectorOrFunctionOrTimeout[, options[, ...args]]) |                                              |
-| waitForFunction(pageFunction[, options[, ...args]])        |                                              |
-| waitForNavigation([options])                               | waitForNavigation                            |
-| waitForRequest(urlOrPredicate[, options])                  |                                              |
-| waitForResponse(urlOrPredicate[, options])                 |                                              |
-| waitForSelector(selector[, options])                       | waitForSelector                              |
-| waitForXPath(xpath[, options])                             |                                              |
-| workers()                                                  |                                              |
+| puppeteer                                                  | Toppokki                                        |
+|------------------------------------------------------------|-------------------------------------------------|
+| event: 'close'                                             |                                                 |
+| event: 'console'                                           |                                                 |
+| event: 'dialog'                                            |                                                 |
+| event: 'domcontentloaded'                                  |                                                 |
+| event: 'error'                                             |                                                 |
+| event: 'frameattached'                                     |                                                 |
+| event: 'framedetached'                                     |                                                 |
+| event: 'framenavigated'                                    |                                                 |
+| event: 'load'                                              |                                                 |
+| event: 'metrics'                                           |                                                 |
+| event: 'pageerror'                                         |                                                 |
+| event: 'popup'                                             |                                                 |
+| event: 'request'                                           |                                                 |
+| event: 'requestfailed'                                     |                                                 |
+| event: 'requestfinished'                                   |                                                 |
+| event: 'response'                                          |                                                 |
+| event: 'workercreated'                                     |                                                 |
+| event: 'workerdestroyed'                                   |                                                 |
+| $(selector)                                                | query                                           |
+| $$(selector)                                               | queryMany                                       |
+| $$eval(selector, pageFunction[, ...args])                  | queryEvalManyViaBrowserify                      |
+| $eval(selector, pageFunction[, ...args])                   | queryEvalViaBrowserify                          |
+| $x(expression)                                             |                                                 |
+| accessibility                                              |                                                 |
+| addScriptTag(options)                                      |                                                 |
+| addStyleTag(options)                                       |                                                 |
+| authenticate(credentials)                                  |                                                 |
+| bringToFront()                                             |                                                 |
+| browser()                                                  |                                                 |
+| browserContext()                                           |                                                 |
+| click(selector[, options])                                 | click                                           |
+| close([options])                                           |                                                 |
+| content()                                                  | content                                         |
+| cookies([...urls])                                         |                                                 |
+| coverage                                                   |                                                 |
+| deleteCookie(...cookies)                                   |                                                 |
+| emulate(options)                                           |                                                 |
+| emulateMedia(mediaType)                                    |                                                 |
+| evaluate(pageFunction[, ...args])                          | evalViaBrowserify, unsafeEvaluateStringFunction |
+| evaluateHandle(pageFunction[, ...args])                    |                                                 |
+| evaluateOnNewDocument(pageFunction[, ...args])             |                                                 |
+| exposeFunction(name, puppeteerFunction)                    |                                                 |
+| focus(selector)                                            | focus                                           |
+| frames()                                                   |                                                 |
+| goBack([options])                                          |                                                 |
+| goForward([options])                                       |                                                 |
+| goto(url[, options])                                       | goto                                            |
+| hover(selector)                                            |                                                 |
+| isClosed()                                                 |                                                 |
+| keyboard                                                   |                                                 |
+| mainFrame()                                                |                                                 |
+| metrics()                                                  |                                                 |
+| mouse                                                      |                                                 |
+| pdf([options])                                             | pdf                                             |
+| queryObjects(prototypeHandle)                              |                                                 |
+| reload([options])                                          |                                                 |
+| screenshot([options])                                      | screenshot                                      |
+| select(selector, ...values)                                |                                                 |
+| setBypassCSP(enabled)                                      |                                                 |
+| setCacheEnabled([enabled])                                 |                                                 |
+| setContent(html[, options])                                |                                                 |
+| setCookie(...cookies)                                      |                                                 |
+| setDefaultNavigationTimeout(timeout)                       |                                                 |
+| setDefaultTimeout(timeout)                                 |                                                 |
+| setExtraHTTPHeaders(headers)                               |                                                 |
+| setGeolocation(options)                                    |                                                 |
+| setJavaScriptEnabled(enabled)                              |                                                 |
+| setOfflineMode(enabled)                                    |                                                 |
+| setRequestInterception(value)                              |                                                 |
+| setUserAgent(userAgent)                                    |                                                 |
+| setViewport(viewport)                                      | setViewport                                     |
+| tap(selector)                                              |                                                 |
+| target()                                                   |                                                 |
+| title()                                                    | title                                           |
+| touchscreen                                                |                                                 |
+| tracing                                                    |                                                 |
+| type(selector, text[, options])                            |                                                 |
+| url()                                                      |                                                 |
+| viewport()                                                 |                                                 |
+| waitFor(selectorOrFunctionOrTimeout[, options[, ...args]]) |                                                 |
+| waitForFunction(pageFunction[, options[, ...args]])        |                                                 |
+| waitForNavigation([options])                               | waitForNavigation                               |
+| waitForRequest(urlOrPredicate[, options])                  |                                                 |
+| waitForResponse(urlOrPredicate[, options])                 |                                                 |
+| waitForSelector(selector[, options])                       | waitForSelector                                 |
+| waitForXPath(xpath[, options])                             |                                                 |
+| workers()                                                  |                                                 |
 
 ### class: Worker
 
-| puppeteer                               | Toppokki       |
-|-----------------------------------------|----------------|
-| evaluate(pageFunction[, ...args])       | unsafeEvaluate |
-| evaluateHandle(pageFunction[, ...args]) |                |
-| executionContext()                      |                |
-| url()                                   |                |
+| puppeteer                               | Toppokki          |
+|-----------------------------------------|-------------------|
+| evaluate(pageFunction[, ...args])       | evalViaBrowserify |
+| evaluateHandle(pageFunction[, ...args]) |                   |
+| executionContext()                      |                   |
+| url()                                   |                   |
 
 ### class: Accessibility
 
@@ -285,47 +285,47 @@ Check out [the docs for `unsafe*` functions](docs/unsafe.md) before you use them
 
 ### class: Frame
 
-| puppeteer                                                  | Toppokki            |
-|------------------------------------------------------------|---------------------|
-| $(selector)                                                | query               |
-| $$(selector)                                               | queryMany           |
-| $$eval(selector, pageFunction[, ...args])                  | unsafeQueryEvalMany |
-| $eval(selector, pageFunction[, ...args])                   | unsafeQueryEval     |
-| $x(expression)                                             |                     |
-| addScriptTag(options)                                      |                     |
-| addStyleTag(options)                                       |                     |
-| childFrames()                                              |                     |
-| click(selector[, options])                                 |                     |
-| content()                                                  |                     |
-| evaluate(pageFunction[, ...args])                          | unsafeEvaluate      |
-| evaluateHandle(pageFunction[, ...args])                    |                     |
-| executionContext()                                         |                     |
-| focus(selector)                                            |                     |
-| goto(url[, options])                                       |                     |
-| hover(selector)                                            |                     |
-| isDetached()                                               |                     |
-| name()                                                     |                     |
-| parentFrame()                                              |                     |
-| select(selector, ...values)                                |                     |
-| setContent(html[, options])                                |                     |
-| tap(selector)                                              |                     |
-| title()                                                    |                     |
-| type(selector, text[, options])                            |                     |
-| url()                                                      |                     |
-| waitFor(selectorOrFunctionOrTimeout[, options[, ...args]]) |                     |
-| waitForFunction(pageFunction[, options[, ...args]])        |                     |
-| waitForNavigation([options])                               |                     |
-| waitForSelector(selector[, options])                       | waitForSelector     |
-| waitForXPath(xpath[, options])                             |                     |
+| puppeteer                                                  | Toppokki                   |
+|------------------------------------------------------------|----------------------------|
+| $(selector)                                                | query                      |
+| $$(selector)                                               | queryMany                  |
+| $$eval(selector, pageFunction[, ...args])                  | queryEvalManyViaBrowserify |
+| $eval(selector, pageFunction[, ...args])                   | queryEvalViaBrowserify     |
+| $x(expression)                                             |                            |
+| addScriptTag(options)                                      |                            |
+| addStyleTag(options)                                       |                            |
+| childFrames()                                              |                            |
+| click(selector[, options])                                 |                            |
+| content()                                                  |                            |
+| evaluate(pageFunction[, ...args])                          | evalViaBrowserify          |
+| evaluateHandle(pageFunction[, ...args])                    |                            |
+| executionContext()                                         |                            |
+| focus(selector)                                            |                            |
+| goto(url[, options])                                       |                            |
+| hover(selector)                                            |                            |
+| isDetached()                                               |                            |
+| name()                                                     |                            |
+| parentFrame()                                              |                            |
+| select(selector, ...values)                                |                            |
+| setContent(html[, options])                                |                            |
+| tap(selector)                                              |                            |
+| title()                                                    |                            |
+| type(selector, text[, options])                            |                            |
+| url()                                                      |                            |
+| waitFor(selectorOrFunctionOrTimeout[, options[, ...args]]) |                            |
+| waitForFunction(pageFunction[, options[, ...args]])        |                            |
+| waitForNavigation([options])                               |                            |
+| waitForSelector(selector[, options])                       | waitForSelector            |
+| waitForXPath(xpath[, options])                             |                            |
 
 ### class: ExecutionContext
 
-| puppeteer                               | Toppokki       |
-|-----------------------------------------|----------------|
-| evaluate(pageFunction[, ...args])       | unsafeEvaluate |
-| evaluateHandle(pageFunction[, ...args]) |                |
-| frame()                                 |                |
-| queryObjects(prototypeHandle)           |                |
+| puppeteer                               | Toppokki          |
+|-----------------------------------------|-------------------|
+| evaluate(pageFunction[, ...args])       | evalViaBrowserify |
+| evaluateHandle(pageFunction[, ...args]) |                   |
+| frame()                                 |                   |
+| queryObjects(prototypeHandle)           |                   |
 
 ### class: JSHandle
 
@@ -340,32 +340,32 @@ Check out [the docs for `unsafe*` functions](docs/unsafe.md) before you use them
 
 ### class: ElementHandle
 
-| puppeteer                                 | Toppokki            |
-|-------------------------------------------|---------------------|
-| $(selector)                               | query               |
-| $$(selector)                              | queryMany           |
-| $$eval(selector, pageFunction[, ...args]) | unsafeQueryEvalMany |
-| $eval(selector, pageFunction[, ...args])  | unsafeQueryEval     |
-| $x(expression)                            |                     |
-| asElement()                               |                     |
-| boundingBox()                             |                     |
-| boxModel()                                |                     |
-| click([options])                          |                     |
-| contentFrame()                            |                     |
-| dispose()                                 |                     |
-| executionContext()                        |                     |
-| focus()                                   |                     |
-| getProperties()                           |                     |
-| getProperty(propertyName)                 |                     |
-| hover()                                   |                     |
-| isIntersectingViewport()                  |                     |
-| jsonValue()                               |                     |
-| press(key[, options])                     |                     |
-| screenshot([options])                     |                     |
-| tap()                                     |                     |
-| toString()                                |                     |
-| type(text[, options])                     |                     |
-| uploadFile(...filePaths)                  |                     |
+| puppeteer                                 | Toppokki                   |
+|-------------------------------------------|----------------------------|
+| $(selector)                               | query                      |
+| $$(selector)                              | queryMany                  |
+| $$eval(selector, pageFunction[, ...args]) | queryEvalManyViaBrowserify |
+| $eval(selector, pageFunction[, ...args])  | queryEvalViaBrowserify     |
+| $x(expression)                            |                            |
+| asElement()                               |                            |
+| boundingBox()                             |                            |
+| boxModel()                                |                            |
+| click([options])                          |                            |
+| contentFrame()                            |                            |
+| dispose()                                 |                            |
+| executionContext()                        |                            |
+| focus()                                   |                            |
+| getProperties()                           |                            |
+| getProperty(propertyName)                 |                            |
+| hover()                                   |                            |
+| isIntersectingViewport()                  |                            |
+| jsonValue()                               |                            |
+| press(key[, options])                     |                            |
+| screenshot([options])                     |                            |
+| tap()                                     |                            |
+| toString()                                |                            |
+| type(text[, options])                     |                            |
+| uploadFile(...filePaths)                  |                            |
 
 ### class: Request
 
