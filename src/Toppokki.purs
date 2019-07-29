@@ -1,21 +1,13 @@
 module Toppokki
        ( Puppeteer
        , Browser
-       , Page
-       , Frame
-       , ElementHandle
        , URL(..)
        , UserAgent(..)
        , LaunchOptions
        , launch
        , newPage
-       , class Queryable
        , query
        , queryMany
-       , unsafeQueryEval
-       , unsafeQueryEvalMany
-       , class Evaluate
-       , unsafeEvaluate
        , goto
        , close
        , content
@@ -41,6 +33,7 @@ module Toppokki
        , waitForNavigation
        , getLocationRef
        , unsafeEvaluateStringFunction
+       , module ReExports
        )
 where
 
@@ -60,18 +53,13 @@ import Node.Buffer (Buffer)
 import Prelude
 import Prim.Row as Row
 import Prim.TypeError (class Fail, Text)
-import Toppokki.Inject (InjectedAff)
 import Unsafe.Coerce (unsafeCoerce)
-import Web.DOM.Element (Element)
 import Web.DOM.ParentNode (QuerySelector)
+import Toppokki.Unsafe (class Queryable, Page, Frame, ElementHandle) as ReExports
+import Toppokki.Unsafe (class Queryable, Page, Frame, ElementHandle)
 
 foreign import data Puppeteer :: Type
 foreign import data Browser :: Type
-foreign import data Page :: Type
-foreign import data Frame :: Type
-foreign import data Worker :: Type
-foreign import data ExecutionContext :: Type
-foreign import data ElementHandle :: Type
 
 newtype URL = URL String
 derive instance newtypeURL :: Newtype URL _
@@ -93,28 +81,6 @@ launch = runPromiseAffE1 _launch
 newPage :: Browser -> Aff Page
 newPage = runPromiseAffE1 _newPage
 
-class Evaluate a
-
-instance evaluatePage :: Evaluate Page
-else instance evaluateWorker :: Evaluate Worker
-else instance evaluateFrame :: Evaluate Frame
-else instance evaluateExecutionContext :: Evaluate ExecutionContext
-else instance evaluateClose :: (Fail (Text "Evaluate class is closed")) => Evaluate a
-
-unsafeEvaluate :: forall ctx r. Evaluate ctx =>
-            ctx -> (Unit -> InjectedAff r) -> Aff Foreign
-unsafeEvaluate ctx callback = do
-  jsCode <- Promise.toAffE (_jsReflect callback)
-  Promise.toAffE (FU.runFn2 _evaluate jsCode ctx)
-
--- | Values which can be queried by selectors.
-class Queryable el
-
-instance queryablePage :: Queryable Page
-else instance queryableFrame :: Queryable Frame
-else instance queryableElementHandle :: Queryable ElementHandle
-else instance queryableClose :: (Fail (Text "Queryable class is closed")) => Queryable a
-
 -- | Query the element using `.$(selector)`
 query :: forall el. Queryable el => QuerySelector -> el -> Aff (Maybe ElementHandle)
 query s el = map unsafeNullOr (runPromiseAffE2 _query s el)
@@ -122,22 +88,6 @@ query s el = map unsafeNullOr (runPromiseAffE2 _query s el)
 -- | Query the element using `.$$(selector)`
 queryMany :: forall el. Queryable el => QuerySelector -> el -> Aff (Array ElementHandle)
 queryMany = runPromiseAffE2 _queryMany
-
--- | Query the element using `.$eval(selector, pageFunction)`.
--- |
--- | If there's no element matching `selector`, the method throws an error.
-unsafeQueryEval :: forall el r. Queryable el =>
-                   QuerySelector -> (Element -> InjectedAff r) -> el -> Aff Foreign
-unsafeQueryEval qs callback el = do
-  jsCode <- Promise.toAffE (_jsReflect callback)
-  Promise.toAffE (FU.runFn3 _queryEval qs jsCode el)
-
--- | Query the element using `.$$eval(selector, pageFunction)`.
-unsafeQueryEvalMany :: forall el r. Queryable el =>
-                       QuerySelector -> (Array Element -> InjectedAff r) -> el -> Aff Foreign
-unsafeQueryEvalMany qs callback el = do
-  jsCode <- Promise.toAffE (_jsReflect callback)
-  Promise.toAffE (FU.runFn3 _queryEvalMany qs jsCode el)
 
 goto :: URL -> Page -> Aff Unit
 goto = runPromiseAffE2 _goto
@@ -323,10 +273,6 @@ foreign import _launch :: forall options. FU.Fn1 options (Effect (Promise Browse
 foreign import _newPage :: FU.Fn1 Browser (Effect (Promise Page))
 foreign import _query :: forall el. FU.Fn2 QuerySelector el (Effect (Promise Foreign))
 foreign import _queryMany :: forall el. FU.Fn2 QuerySelector el (Effect (Promise (Array ElementHandle)))
-foreign import _queryEval :: forall el. FU.Fn3 QuerySelector String el (Effect (Promise Foreign))
-foreign import _queryEvalMany :: forall el. FU.Fn3 QuerySelector String el (Effect (Promise Foreign))
-foreign import _evaluate :: forall ctx. FU.Fn2 String ctx (Effect (Promise Foreign))
-foreign import _jsReflect :: forall a. a -> Effect (Promise String)
 foreign import _goto :: FU.Fn2 URL Page (Effect (Promise Unit))
 foreign import _close :: FU.Fn1 Browser (Effect (Promise Unit))
 foreign import _content :: FU.Fn1 Page (Effect (Promise String))

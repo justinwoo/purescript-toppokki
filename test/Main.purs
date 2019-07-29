@@ -23,6 +23,7 @@ import Test.Unit.Assert as Assert
 import Test.Unit.Main (runTest)
 import Toppokki as T
 import Toppokki.Inject (inject, injectEffect, injectPure)
+import Toppokki.Unsafe as Unsafe
 import Web.DOM.Element (className, tagName, toParentNode)
 import Web.DOM.Node as WDN
 import Web.DOM.NodeList as WDNL
@@ -149,56 +150,57 @@ tests dir = runTest do
         (isLeft invalidResult)
       T.close browser
 
-    test "can use `unsafeQueryEval`" do
+    test "can use `queryEvalViaBrowserify`" do
       browser <- T.launch {}
       page <- T.newPage browser
       T.goto crashUrl page
-      text <- F.unsafeFromForeign <$> T.unsafeQueryEval (wrap "#unique")
+      text <- F.unsafeFromForeign <$> Unsafe.queryEvalViaBrowserify (wrap "#unique")
               (\elem -> inject $ pure $ tagName elem)
               page
-      Assert.assert "`unsafeQueryEval` works" (text == "SPAN")
+      Assert.assert "`queryEvalViaBrowserify` works" (text == "SPAN")
 
-      maybeNonExistent <- attempt $ T.unsafeQueryEval (wrap "#nonexistent")
+      maybeNonExistent <- attempt $ Unsafe.queryEvalViaBrowserify (wrap "#nonexistent")
                                     (\elem -> inject $ pure $ tagName elem)
                                     page
       Assert.assert
-        "`unsafeQueryEval` fails on non-existent elements"
+        "`queryEvalViaBrowserify` fails on non-existent elements"
         (isLeft maybeNonExistent)
 
-      invalidResult <- attempt $ T.unsafeQueryEval (wrap "invalid!")
+      invalidResult <- attempt $ Unsafe.queryEvalViaBrowserify (wrap "invalid!")
                                  (injectPure <<< const 0)
                                  page
       Assert.assert
-        "`unsafeQueryEval` throws on invalid selector"
+        "`queryEvalViaBrowserify` throws on invalid selector"
         (isLeft invalidResult)
 
       T.close browser
 
-    test "can use `unsafeQueryEvalMany`" do
+    test "can use `queryEvalManyViaBrowserify`" do
       browser <- T.launch {}
       page <- T.newPage browser
       T.goto crashUrl page
 
-      tagNames <- F.unsafeFromForeign <$> T.unsafeQueryEvalMany
+      tagNames <- F.unsafeFromForeign <$> Unsafe.queryEvalManyViaBrowserify
                   (wrap ".something")
                   (\elems -> injectEffect $ sequence $ map className elems)
                   page
       Assert.assert
-        "`unsafeQueryEvalMany` works"
+        "`queryEvalManyViaBrowserify` works"
         (tagNames == ["something", "something", "something"])
 
-      nonexistentCount <- F.unsafeFromForeign <$> T.unsafeQueryEvalMany (wrap "#nonexistent")
+      nonexistentCount <- F.unsafeFromForeign <$> Unsafe.queryEvalManyViaBrowserify
+                          (wrap "#nonexistent")
                           (\elems -> inject $ pure $ A.length elems)
                           page
       Assert.assert
-        "`unsafeQueryEvalMany` does not fail on non-existent elements"
+        "`queryEvalViaBrowserifyMany` does not fail on non-existent elements"
         (nonexistentCount == 0)
 
-      invalidResult <- attempt $ T.unsafeQueryEvalMany (wrap "invalid!")
+      invalidResult <- attempt $ Unsafe.queryEvalManyViaBrowserify (wrap "invalid!")
                                  (\_ -> injectPure 0)
                                  page
       Assert.assert
-        "`unsafeQueryEval` throws on invalid selector"
+        "`queryEvalViaBrowserify` throws on invalid selector"
         (isLeft invalidResult)
 
       T.close browser
@@ -208,7 +210,7 @@ tests dir = runTest do
       page <- T.newPage browser
       T.goto crashUrl page
 
-      value1 <- F.unsafeFromForeign <$> T.unsafeQueryEvalMany (wrap "#unique")
+      value1 <- F.unsafeFromForeign <$> Unsafe.queryEvalManyViaBrowserify (wrap "#unique")
                 (\elems -> inject do
                     let res1 = "val"
                     let res2 = "ue1"
@@ -218,7 +220,7 @@ tests dir = runTest do
         "`_jsReflect` does not break with local variable bindings"
         (value1 == "value1")
 
-      value2 <- F.unsafeFromForeign <$> T.unsafeQueryEval (wrap "#unique")
+      value2 <- F.unsafeFromForeign <$> Unsafe.queryEvalViaBrowserify (wrap "#unique")
                 (\_ -> inject do
                     let res = \x -> x
                     pure (res "value2"))
@@ -228,7 +230,7 @@ tests dir = runTest do
         (value2 == "value2")
 
       -- A complex example
-      len1 <- F.unsafeFromForeign <$> T.unsafeQueryEval (wrap "body")
+      len1 <- F.unsafeFromForeign <$> Unsafe.queryEvalViaBrowserify (wrap "body")
               (\body -> injectEffect do
                   nodeArray <- (querySelectorAll (wrap "*") >=> WDNL.toArray)
                                (toParentNode body)
@@ -244,7 +246,7 @@ tests dir = runTest do
                           void (DAST.push 0 ref))
                     pure ref)
               page
-      len2 <- F.unsafeFromForeign <$> T.unsafeQueryEvalMany (wrap "* > * *")
+      len2 <- F.unsafeFromForeign <$> Unsafe.queryEvalManyViaBrowserify (wrap "* > * *")
               (injectPure <<< A.length)
               page
       Assert.assert
@@ -259,13 +261,13 @@ tests dir = runTest do
       page <- T.newPage browser
       T.goto crashUrl page
 
-      title1 <- F.unsafeFromForeign <$> T.unsafeEvaluate page
+      title1 <- F.unsafeFromForeign <$> Unsafe.evalViaBrowserify page
                 (\_ -> injectEffect (window >>= document >>= title))
 
-      failing1 <- (map <<< map) F.unsafeFromForeign <$> try $ T.unsafeEvaluate page
+      failing1 <- (map <<< map) F.unsafeFromForeign <$> try $ Unsafe.evalViaBrowserify page
                   (injectEffect <<< const (window >>= document >>= title))
 
-      failing2 <- (map <<< map) F.unsafeFromForeign <$> try $ T.unsafeEvaluate page
+      failing2 <- (map <<< map) F.unsafeFromForeign <$> try $ Unsafe.evalViaBrowserify page
                   (const (injectEffect (window >>= document >>= title)))
 
       Assert.assert
@@ -283,7 +285,7 @@ tests dir = runTest do
                "docs/unsafe.md)"))
 
       Assert.assert
-        ("can get window title using `unsafeEvaluate`" <> title1)
+        ("can get window title using `evalViaBrowserify`" <> title1)
         (title1 == "Page Title")
 
       T.close browser
