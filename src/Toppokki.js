@@ -1,3 +1,4 @@
+/* global require exports */
 var puppeteer = require("puppeteer");
 
 exports.puppeteer = puppeteer;
@@ -11,6 +12,18 @@ exports._launch = function(options) {
 exports._newPage = function(browser) {
   return function() {
     return browser.newPage();
+  };
+};
+
+exports._query = function(selector, queryable) {
+  return function() {
+    return queryable.$(selector);
+  };
+};
+
+exports._queryMany = function(selector, queryable) {
+  return function() {
+    return queryable.$$(selector);
   };
 };
 
@@ -38,6 +51,24 @@ exports._content = function(page) {
   };
 };
 
+exports._title = function(page) {
+  return function () {
+    return page.title();
+  };
+};
+
+exports._setUserAgent = function(userAgent, page) {
+  return function () {
+    return page.setUserAgent(userAgent);
+  };
+};
+
+exports._setViewport = function(viewport, page) {
+  return function () {
+    return page.setViewport(viewport);
+  };
+};
+
 exports._screenshot = function(options, page) {
   return function() {
     return page.screenshot(options);
@@ -54,7 +85,7 @@ exports._on = function(event, callback, page) {
   return page.on(event, callback);
 };
 
-exports._pageWaitForSelector = function(selector, options, page) {
+exports._waitForSelector = function(selector, options, page) {
   return function() {
     return page.waitForSelector(selector, options);
   };
