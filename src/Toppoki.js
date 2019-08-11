@@ -32,12 +32,6 @@ exports._content = function(page) {
   };
 };
 
-exports._content = function(page) {
-  return function() {
-    return page.content();
-  };
-};
-
 exports._screenshot = function(options, page) {
   return function() {
     return page.screenshot(options);
