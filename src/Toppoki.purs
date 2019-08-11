@@ -174,6 +174,22 @@ getLocationRef p = Promise.toAffE $ FU.runFn1 _getLocationHref p
 unsafeEvaluateStringFunction :: String -> Page -> Aff Foreign
 unsafeEvaluateStringFunction = runPromiseAffE2 _unsafeEvaluateStringFunction
 
+-- | This method runs document.querySelector within the page and passes it as the first argument to pageFunction. If there's no element matching selector, the method throws an error.
+-- |
+-- | Second argument is a pageFunction which should be a valid JavaScript function written as a string which we unsafely eval.
+-- |
+-- | If pageFunction returns a Promise, then page.$$eval would wait for the promise to resolve and return its value.
+unsafePageEval :: Selector -> String -> Page -> Aff Foreign
+unsafePageEval = runPromiseAffE3 _unsafePageEval
+
+-- | This method runs Array.from(document.querySelectorAll(selector)) within the page and passes it as the first argument to pageFunction.
+-- |
+-- | Second argument is a pageFunction which should be a valid JavaScript function written as a string which we unsafely eval.
+-- |
+-- | If pageFunction returns a Promise, then page.$$eval would wait for the promise to resolve and return its value.
+unsafePageEvalAll :: Selector -> String -> Page -> Aff Foreign
+unsafePageEvalAll = runPromiseAffE3 _unsafePageEvalAll
+
 runPromiseAffE1 :: forall a o. FU.Fn1 a (Effect (Promise o)) -> a -> Aff o
 runPromiseAffE1 f a = Promise.toAffE $ FU.runFn1 f a
 
@@ -202,3 +218,5 @@ foreign import _click :: FU.Fn2 Selector Page (Effect (Promise Unit))
 foreign import _waitForNavigation :: forall options. FU.Fn2 options Page (Effect (Promise Unit))
 foreign import _getLocationHref :: FU.Fn1 Page (Effect (Promise String))
 foreign import _unsafeEvaluateStringFunction :: FU.Fn2 String Page (Effect (Promise Foreign))
+foreign import _unsafePageEval :: FU.Fn3 Selector String Page (Effect (Promise Foreign))
+foreign import _unsafePageEvalAll :: FU.Fn3 Selector String Page (Effect (Promise Foreign))

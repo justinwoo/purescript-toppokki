@@ -8,6 +8,7 @@ import Effect (Effect)
 import Effect.Class (liftEffect)
 import Effect.Ref as Ref
 import Effect.Uncurried as EU
+import Foreign (unsafeFromForeign)
 import Node.Process (cwd)
 import Test.Unit (suite, test)
 import Test.Unit.Assert as Assert
@@ -22,10 +23,8 @@ main = do
 tests :: String -> Effect Unit
 tests dir = runTest do
   suite "toppokki" do
-    let crashUrl = T.URL
-            $ "file://"
-           <> dir
-           <> "/test/crash.html"
+    let crashUrl = T.URL $ "file://" <> dir <> "/test/crash.html"
+        testUrl = T.URL $ "file://" <> dir <> "/test/test.html"
 
     test "can screenshot and pdf output a loaded page" do
       browser <- T.launch {}
@@ -54,4 +53,28 @@ tests dir = runTest do
       liftEffect $ T.onPageError (EU.mkEffectFn1 $ (Ref.write <@> ref) <<< Just) page
       T.goto crashUrl page
       _ <- T.pageWaitForSelector (T.Selector "h1") {} page
+      T.close browser
+
+    test "can run functions against a single element in the page" do
+      browser <- T.launch {}
+      page <- T.newPage browser
+      T.goto testUrl page
+      innerTextF <- T.unsafePageEval
+        (T.Selector ".eval-one")
+        "el => el.innerText"
+        page
+      let innerText = (unsafeFromForeign innerTextF) :: String
+      Assert.equal "abc" innerText
+      T.close browser
+
+    test "can run functions against elements in the page" do
+      browser <- T.launch {}
+      page <- T.newPage browser
+      T.goto testUrl page
+      innerTextsF <- T.unsafePageEvalAll
+        (T.Selector ".eval-many")
+        "els => els.map(e => e.innerText)"
+        page
+      let innerTexts = (unsafeFromForeign innerTextsF) :: Array String
+      Assert.equal ["abc","def"] innerTexts
       T.close browser

@@ -91,3 +91,15 @@ exports._unsafeEvaluateStringFunction = function(string, page) {
     return page.evaluate(string);
   };
 };
+
+exports._unsafePageEval = function(selector, fnStr, page) {
+  return function() {
+    return page.$eval(selector, eval(fnStr));
+  };
+};
+
+exports._unsafePageEvalAll = function(selector, fnStr, page) {
+  return function() {
+    return page.$$eval(selector, eval(fnStr));
+  };
+};
