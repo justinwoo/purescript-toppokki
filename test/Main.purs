@@ -2,10 +2,14 @@ module Test.Main where
 
 import Prelude
 
+import Control.Monad.Except (runExcept)
+import Data.Either (Either(..))
 import Data.Maybe (Maybe(..), isJust)
 import Data.String as String
 import Effect (Effect)
+import Effect.Aff (throwError)
 import Effect.Class (liftEffect)
+import Effect.Exception (error)
 import Effect.Ref as Ref
 import Effect.Uncurried as EU
 import Foreign (unsafeFromForeign)
@@ -77,4 +81,70 @@ tests dir = runTest do
         page
       let innerTexts = (unsafeFromForeign innerTextsF) :: Array String
       Assert.equal ["abc","def"] innerTexts
+      T.close browser
+
+    test "can trigger keyboard presses" do
+      let
+        aKey = T.KeyboardKey "a"
+        getRawKeyName (T.KeyboardKey a) = a
+      browser <- T.launch {}
+      page <- T.newPage browser
+      T.goto testUrl page
+      T.focus (T.Selector "input#test-press") page
+      T.keyboardPress aKey {} page
+      input <- T.unsafePageEval
+        (T.Selector "input#test-press")
+        "e => e.value"
+        page
+      case runExcept $ readString input of
+        Left _ -> throwError $ error "failed to read test input element value"
+        Right value -> Assert.assert "test input element does not contain pressed key" (value == (getRawKeyName aKey))
+      T.close browser
+
+    test "can trigger keyboard typing" do
+      browser <- T.launch {}
+      page <- T.newPage browser
+      T.goto testUrl page
+      T.focus (T.Selector "input#test-type") page
+      T.keyboardType "Hello World!" {} page
+      inputTextF <- T.unsafePageEval
+        (T.Selector "input#test-type")
+        "e => e.value"
+        page
+      case runExcept $ readString inputTextF of
+        Left _ -> throwError $ error "failed to read test input element value"
+        Right value -> Assert.equal "Hello World!" value
+      T.close browser
+
+    test "can trigger keyboard down and up" do
+      browser <- T.launch {}
+      page <- T.newPage browser
+      T.goto testUrl page
+      T.focus (T.Selector "input#test-downup") page
+      T.keyboardDown (T.KeyboardKey "Shift") {} page
+      T.keyboardPress (T.KeyboardKey "KeyA") {} page
+      T.keyboardUp (T.KeyboardKey "Shift") {} page
+      T.keyboardPress (T.KeyboardKey "KeyB") {} page
+      inputTextF <- T.unsafePageEval
+        (T.Selector "input#test-downup")
+        "e => e.value"
+        page
+      case runExcept $ readString inputTextF of
+        Left _ -> throwError $ error "failed to read test input element value"
+        Right value -> Assert.equal "Ab" value
+      T.close browser
+
+    test "can send any character through the keyboard" do
+      browser <- T.launch {}
+      page <- T.newPage browser
+      T.goto testUrl page
+      T.focus (T.Selector "input#test-sendcharacter") page
+      T.keyboardSendCharacter "∀" page
+      inputTextF <- T.unsafePageEval
+        (T.Selector "input#test-sendcharacter")
+        "e => e.value"
+        page
+      case runExcept $ readString inputTextF of
+        Left _ -> throwError $ error "failed to read test input element value"
+        Right value -> Assert.equal "∀" value
       T.close browser

@@ -103,3 +103,33 @@ exports._unsafePageEvalAll = function(selector, fnStr, page) {
     return page.$$eval(selector, eval(fnStr));
   };
 };
+
+exports._keyboardDown = function(string, options, page) {
+  return function() {
+    return page.keyboard.down(string, options);
+  };
+};
+
+exports._keyboardPress = function(key, options, page) {
+  return function() {
+    return page.keyboard.press(key, options);
+  };
+};
+
+exports._keyboardSendCharacter = function(char, page) {
+  return function() {
+    return page.keyboard.sendCharacter(char);
+  };
+};
+
+exports._keyboardType = function(text, options, page) {
+  return function() {
+    return page.keyboard.type(text, options);
+  };
+};
+
+exports._keyboardUp = function(string, options, page) {
+  return function() {
+    return page.keyboard.up(string, options);
+  };
+};

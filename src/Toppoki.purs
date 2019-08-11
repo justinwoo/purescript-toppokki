@@ -202,6 +202,54 @@ runPromiseAffE3 f a b c = Promise.toAffE $ FU.runFn3 f a b c
 runPromiseAffE4 :: forall a b c d o. FU.Fn4 a b c d (Effect (Promise o)) -> a -> b -> c -> d -> Aff o
 runPromiseAffE4 f a b c d = Promise.toAffE $ FU.runFn4 f a b c d
 
+-- | See [USKeyboardLayout](https://github.com/GoogleChrome/puppeteer/blob/v1.18.1/lib/USKeyboardLayout.js) for a list of all key names.
+newtype KeyboardKey = KeyboardKey String
+
+-- | Dispatches a keydown event.
+keyboardDown :: forall options trash
+              . Row.Union options trash ( text :: String )
+             => KeyboardKey
+             -> { | options }
+             -> Page
+             -> Aff Unit
+keyboardDown key options page = runPromiseAffE3 _keyboardDown key options page
+
+-- | Trigger a single keypress. Shortcut for `keyboard.down` and `keyboard.up`.
+keyboardPress
+  :: forall options trash
+   . Row.Union options trash
+       ( delay :: Int
+       , text :: String
+       )
+  => KeyboardKey
+  -> { | options }
+  -> Page
+  -> Aff Unit
+keyboardPress = runPromiseAffE3 _keyboardPress
+
+-- | Dispatches a keypress and input event. This does not send a keydown or keyup event.
+keyboardSendCharacter :: String -> Page -> Aff Unit
+keyboardSendCharacter char page = runPromiseAffE2 _keyboardSendCharacter char page
+
+-- | Sends a keydown, keypress/input, and keyup event for each character in the text.
+-- | To press a special key, like Control or ArrowDown, use keyboard.press.
+keyboardType :: forall options trash
+              . Row.Union options trash ( delay :: Number )
+             => String
+             -> { | options }
+             -> Page
+             -> Aff Unit
+keyboardType = runPromiseAffE3 _keyboardType
+
+-- | Dispatches a keyup event.
+keyboardUp :: forall options trash
+              . Row.Union options trash ( text :: String )
+             => KeyboardKey
+             -> { | options }
+             -> Page
+             -> Aff Unit
+keyboardUp key options page = runPromiseAffE3 _keyboardUp key options page
+
 foreign import puppeteer :: Puppeteer
 foreign import _launch :: forall options. FU.Fn1 options (Effect (Promise Browser))
 foreign import _newPage :: FU.Fn1 Browser (Effect (Promise Page))
@@ -220,3 +268,8 @@ foreign import _getLocationHref :: FU.Fn1 Page (Effect (Promise String))
 foreign import _unsafeEvaluateStringFunction :: FU.Fn2 String Page (Effect (Promise Foreign))
 foreign import _unsafePageEval :: FU.Fn3 Selector String Page (Effect (Promise Foreign))
 foreign import _unsafePageEvalAll :: FU.Fn3 Selector String Page (Effect (Promise Foreign))
+foreign import _keyboardDown :: forall options. FU.Fn3 KeyboardKey options Page (Effect (Promise Unit))
+foreign import _keyboardPress :: forall options. FU.Fn3 KeyboardKey options Page (Effect (Promise Unit))
+foreign import _keyboardSendCharacter :: FU.Fn2 String Page (Effect (Promise Unit))
+foreign import _keyboardType :: forall options. FU.Fn3 String options Page (Effect (Promise Unit))
+foreign import _keyboardUp :: forall options. FU.Fn3 KeyboardKey options Page (Effect (Promise Unit))
