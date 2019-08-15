@@ -174,6 +174,22 @@ getLocationRef p = Promise.toAffE $ FU.runFn1 _getLocationHref p
 unsafeEvaluateStringFunction :: String -> Page -> Aff Foreign
 unsafeEvaluateStringFunction = runPromiseAffE2 _unsafeEvaluateStringFunction
 
+-- | This method runs document.querySelector within the page and passes it as the first argument to pageFunction. If there's no element matching selector, the method throws an error.
+-- |
+-- | Second argument is a pageFunction which should be a valid JavaScript function written as a string which we unsafely eval.
+-- |
+-- | If pageFunction returns a Promise, then page.$$eval would wait for the promise to resolve and return its value.
+unsafePageEval :: Selector -> String -> Page -> Aff Foreign
+unsafePageEval = runPromiseAffE3 _unsafePageEval
+
+-- | This method runs Array.from(document.querySelectorAll(selector)) within the page and passes it as the first argument to pageFunction.
+-- |
+-- | Second argument is a pageFunction which should be a valid JavaScript function written as a string which we unsafely eval.
+-- |
+-- | If pageFunction returns a Promise, then page.$$eval would wait for the promise to resolve and return its value.
+unsafePageEvalAll :: Selector -> String -> Page -> Aff Foreign
+unsafePageEvalAll = runPromiseAffE3 _unsafePageEvalAll
+
 runPromiseAffE1 :: forall a o. FU.Fn1 a (Effect (Promise o)) -> a -> Aff o
 runPromiseAffE1 f a = Promise.toAffE $ FU.runFn1 f a
 
@@ -181,10 +197,58 @@ runPromiseAffE2 :: forall a b o. FU.Fn2 a b (Effect (Promise o)) -> a -> b -> Af
 runPromiseAffE2 f a b = Promise.toAffE $ FU.runFn2 f a b
 
 runPromiseAffE3 :: forall a b c o. FU.Fn3 a b c (Effect (Promise o)) -> a -> b -> c -> Aff o
-runPromiseAffE3 f a b c =  Promise.toAffE $ FU.runFn3 f a b c
+runPromiseAffE3 f a b c = Promise.toAffE $ FU.runFn3 f a b c
 
 runPromiseAffE4 :: forall a b c d o. FU.Fn4 a b c d (Effect (Promise o)) -> a -> b -> c -> d -> Aff o
-runPromiseAffE4 f a b c d =  Promise.toAffE $ FU.runFn4 f a b c d
+runPromiseAffE4 f a b c d = Promise.toAffE $ FU.runFn4 f a b c d
+
+-- | See [USKeyboardLayout](https://github.com/GoogleChrome/puppeteer/blob/v1.18.1/lib/USKeyboardLayout.js) for a list of all key names.
+newtype KeyboardKey = KeyboardKey String
+
+-- | Dispatches a keydown event.
+keyboardDown :: forall options trash
+              . Row.Union options trash ( text :: String )
+             => KeyboardKey
+             -> { | options }
+             -> Page
+             -> Aff Unit
+keyboardDown key options page = runPromiseAffE3 _keyboardDown key options page
+
+-- | Trigger a single keypress. Shortcut for `keyboard.down` and `keyboard.up`.
+keyboardPress
+  :: forall options trash
+   . Row.Union options trash
+       ( delay :: Int
+       , text :: String
+       )
+  => KeyboardKey
+  -> { | options }
+  -> Page
+  -> Aff Unit
+keyboardPress = runPromiseAffE3 _keyboardPress
+
+-- | Dispatches a keypress and input event. This does not send a keydown or keyup event.
+keyboardSendCharacter :: String -> Page -> Aff Unit
+keyboardSendCharacter char page = runPromiseAffE2 _keyboardSendCharacter char page
+
+-- | Sends a keydown, keypress/input, and keyup event for each character in the text.
+-- | To press a special key, like Control or ArrowDown, use keyboard.press.
+keyboardType :: forall options trash
+              . Row.Union options trash ( delay :: Number )
+             => String
+             -> { | options }
+             -> Page
+             -> Aff Unit
+keyboardType = runPromiseAffE3 _keyboardType
+
+-- | Dispatches a keyup event.
+keyboardUp :: forall options trash
+              . Row.Union options trash ( text :: String )
+             => KeyboardKey
+             -> { | options }
+             -> Page
+             -> Aff Unit
+keyboardUp key options page = runPromiseAffE3 _keyboardUp key options page
 
 foreign import puppeteer :: Puppeteer
 foreign import _launch :: forall options. FU.Fn1 options (Effect (Promise Browser))
@@ -202,3 +266,10 @@ foreign import _click :: FU.Fn2 Selector Page (Effect (Promise Unit))
 foreign import _waitForNavigation :: forall options. FU.Fn2 options Page (Effect (Promise Unit))
 foreign import _getLocationHref :: FU.Fn1 Page (Effect (Promise String))
 foreign import _unsafeEvaluateStringFunction :: FU.Fn2 String Page (Effect (Promise Foreign))
+foreign import _unsafePageEval :: FU.Fn3 Selector String Page (Effect (Promise Foreign))
+foreign import _unsafePageEvalAll :: FU.Fn3 Selector String Page (Effect (Promise Foreign))
+foreign import _keyboardDown :: forall options. FU.Fn3 KeyboardKey options Page (Effect (Promise Unit))
+foreign import _keyboardPress :: forall options. FU.Fn3 KeyboardKey options Page (Effect (Promise Unit))
+foreign import _keyboardSendCharacter :: FU.Fn2 String Page (Effect (Promise Unit))
+foreign import _keyboardType :: forall options. FU.Fn3 String options Page (Effect (Promise Unit))
+foreign import _keyboardUp :: forall options. FU.Fn3 KeyboardKey options Page (Effect (Promise Unit))

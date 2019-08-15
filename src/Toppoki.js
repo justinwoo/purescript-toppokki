@@ -32,12 +32,6 @@ exports._content = function(page) {
   };
 };
 
-exports._content = function(page) {
-  return function() {
-    return page.content();
-  };
-};
-
 exports._screenshot = function(options, page) {
   return function() {
     return page.screenshot(options);
@@ -95,5 +89,47 @@ exports._getLocationHref = function(page) {
 exports._unsafeEvaluateStringFunction = function(string, page) {
   return function() {
     return page.evaluate(string);
+  };
+};
+
+exports._unsafePageEval = function(selector, fnStr, page) {
+  return function() {
+    return page.$eval(selector, eval(fnStr));
+  };
+};
+
+exports._unsafePageEvalAll = function(selector, fnStr, page) {
+  return function() {
+    return page.$$eval(selector, eval(fnStr));
+  };
+};
+
+exports._keyboardDown = function(string, options, page) {
+  return function() {
+    return page.keyboard.down(string, options);
+  };
+};
+
+exports._keyboardPress = function(key, options, page) {
+  return function() {
+    return page.keyboard.press(key, options);
+  };
+};
+
+exports._keyboardSendCharacter = function(char, page) {
+  return function() {
+    return page.keyboard.sendCharacter(char);
+  };
+};
+
+exports._keyboardType = function(text, options, page) {
+  return function() {
+    return page.keyboard.type(text, options);
+  };
+};
+
+exports._keyboardUp = function(string, options, page) {
+  return function() {
+    return page.keyboard.up(string, options);
   };
 };
