@@ -250,6 +250,9 @@ keyboardUp :: forall options trash
              -> Aff Unit
 keyboardUp key options page = runPromiseAffE3 _keyboardUp key options page
 
+setUserAgent :: String -> Page -> Aff Unit
+setUserAgent = runPromiseAffE2 _setUserAgent
+
 foreign import puppeteer :: Puppeteer
 foreign import _launch :: forall options. FU.Fn1 options (Effect (Promise Browser))
 foreign import _newPage :: FU.Fn1 Browser (Effect (Promise Page))
@@ -273,3 +276,4 @@ foreign import _keyboardPress :: forall options. FU.Fn3 KeyboardKey options Page
 foreign import _keyboardSendCharacter :: FU.Fn2 String Page (Effect (Promise Unit))
 foreign import _keyboardType :: forall options. FU.Fn3 String options Page (Effect (Promise Unit))
 foreign import _keyboardUp :: forall options. FU.Fn3 KeyboardKey options Page (Effect (Promise Unit))
+foreign import _setUserAgent :: FU.Fn2 String Page (Effect (Promise Unit))

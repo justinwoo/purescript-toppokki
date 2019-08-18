@@ -133,3 +133,9 @@ exports._keyboardUp = function(string, options, page) {
     return page.keyboard.up(string, options);
   };
 };
+
+exports._setUserAgent = function(string, page) {
+  return function() {
+    return page.setUserAgent(string);
+  };
+};
