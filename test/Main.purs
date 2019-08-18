@@ -148,3 +148,10 @@ tests dir = runTest do
         Left _ -> throwError $ error "failed to read test input element value"
         Right value -> Assert.equal "∀" value
       T.close browser
+
+    test "setting the user agent successfully completes" do
+       browser <- T.launch {}
+       page <- T.newPage browser
+       T.setUserAgent "Toppokki yum!" page
+       T.close browser
+
