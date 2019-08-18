@@ -212,7 +212,7 @@ keyboardDown :: forall options trash
              -> { | options }
              -> Page
              -> Aff Unit
-keyboardDown key options page = runPromiseAffE3 _keyboardDown key options page
+keyboardDown = runPromiseAffE3 _keyboardDown
 
 -- | Trigger a single keypress. Shortcut for `keyboard.down` and `keyboard.up`.
 keyboardPress
@@ -229,7 +229,7 @@ keyboardPress = runPromiseAffE3 _keyboardPress
 
 -- | Dispatches a keypress and input event. This does not send a keydown or keyup event.
 keyboardSendCharacter :: String -> Page -> Aff Unit
-keyboardSendCharacter char page = runPromiseAffE2 _keyboardSendCharacter char page
+keyboardSendCharacter = runPromiseAffE2 _keyboardSendCharacter
 
 -- | Sends a keydown, keypress/input, and keyup event for each character in the text.
 -- | To press a special key, like Control or ArrowDown, use keyboard.press.
@@ -248,7 +248,7 @@ keyboardUp :: forall options trash
              -> { | options }
              -> Page
              -> Aff Unit
-keyboardUp key options page = runPromiseAffE3 _keyboardUp key options page
+keyboardUp = runPromiseAffE3 _keyboardUp
 
 setUserAgent :: String -> Page -> Aff Unit
 setUserAgent = runPromiseAffE2 _setUserAgent
