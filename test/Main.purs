@@ -12,7 +12,7 @@ import Effect.Class (liftEffect)
 import Effect.Exception (error)
 import Effect.Ref as Ref
 import Effect.Uncurried as EU
-import Foreign (unsafeFromForeign)
+import Foreign (readString, unsafeFromForeign)
 import Node.Process (cwd)
 import Test.Unit (suite, test)
 import Test.Unit.Assert as Assert
