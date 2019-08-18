@@ -12,16 +12,16 @@
     "output"
   ],
   "dependencies": {
-    "purescript-prelude": "^4.0.1",
-    "purescript-record": "^1.0.0",
+    "purescript-prelude": "^4.1.1",
+    "purescript-record": "^2.0.1",
     "purescript-functions": "^4.0.0",
-    "purescript-node-http": "^5.0.0",
-    "purescript-aff-promise": "^2.0.0",
-    "purescript-node-buffer": "^5.0.0"
+    "purescript-node-http": "^5.0.2",
+    "purescript-aff-promise": "^2.1.0",
+    "purescript-node-buffer": "^6.0.0"
   },
   "devDependencies": {
-    "purescript-milkis": "^6.0.1",
-    "purescript-test-unit": "^14.0.0",
-    "purescript-node-process": "^6.0.0"
+    "purescript-milkis": "^7.2.1",
+    "purescript-test-unit": "^15.0.0",
+    "purescript-node-process": "^7.0.0"
   }
 }
