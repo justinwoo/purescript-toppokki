@@ -86,9 +86,9 @@ exports._getLocationHref = function(page) {
   };
 };
 
-exports.__unsafeEvaluateOnNewDocument = function(filePath, page) {
+exports._unsafeEvaluateOnNewDocument = function(string, page) {
   return function() {
-     return page.evaluateOnNewDocument(filePath);
+     return page.evaluateOnNewDocument(string);
   }
 }
 
