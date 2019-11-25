@@ -171,6 +171,12 @@ waitForNavigation = runPromiseAffE2 _waitForNavigation
 getLocationRef :: Page -> Aff String
 getLocationRef p = Promise.toAffE $ FU.runFn1 _getLocationHref p
 
+-- | The function is invoked after the document was created but before any of its scripts were run.
+-- |
+-- | This is useful to amend the environment, e.g. to seed Math.random.
+unsafeEvaluateOnNewDocument :: String -> Page -> Aff Foreign
+unsafeEvaluateOnNewDocument = runPromiseAffE2 _unsafeEvaluateOnNewDocument
+
 unsafeEvaluateStringFunction :: String -> Page -> Aff Foreign
 unsafeEvaluateStringFunction = runPromiseAffE2 _unsafeEvaluateStringFunction
 
@@ -268,6 +274,7 @@ foreign import _type :: forall options. FU.Fn4 Selector String options Page (Eff
 foreign import _click :: FU.Fn2 Selector Page (Effect (Promise Unit))
 foreign import _waitForNavigation :: forall options. FU.Fn2 options Page (Effect (Promise Unit))
 foreign import _getLocationHref :: FU.Fn1 Page (Effect (Promise String))
+foreign import _unsafeEvaluateOnNewDocument :: FU.Fn2 String Page (Effect (Promise Foreign))
 foreign import _unsafeEvaluateStringFunction :: FU.Fn2 String Page (Effect (Promise Foreign))
 foreign import _unsafePageEval :: FU.Fn3 Selector String Page (Effect (Promise Foreign))
 foreign import _unsafePageEvalAll :: FU.Fn3 Selector String Page (Effect (Promise Foreign))

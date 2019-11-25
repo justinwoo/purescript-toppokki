@@ -17,7 +17,8 @@
     "purescript-functions": "^4.0.0",
     "purescript-node-http": "^5.0.2",
     "purescript-aff-promise": "^2.1.0",
-    "purescript-node-buffer": "^6.0.0"
+    "purescript-node-buffer": "^6.0.0",
+    "purescript-node-aff": "^6.0.0"
   },
   "devDependencies": {
     "purescript-milkis": "^7.2.1",

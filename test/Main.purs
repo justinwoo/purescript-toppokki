@@ -13,6 +13,8 @@ import Effect.Exception (error)
 import Effect.Ref as Ref
 import Effect.Uncurried as EU
 import Foreign (readString, unsafeFromForeign)
+import Node.Encoding (Encoding(..))
+import Node.FS.Aff (readTextFile)
 import Node.Process (cwd)
 import Test.Unit (suite, test)
 import Test.Unit.Assert as Assert
@@ -155,3 +157,16 @@ tests dir = runTest do
        T.setUserAgent "Toppokki yum!" page
        T.close browser
 
+    test "can inject js file into page" do
+      browser <- T.launch {}
+      page <- T.newPage browser
+      jsFile <- readTextFile UTF8 "./test/inject.js"
+      _ <- T.unsafeEvaluateOnNewDocument jsFile page
+      T.goto testUrl page
+      innerTextF <- T.unsafePageEval
+        (T.Selector "#eval-inject")
+        "el => el.innerText"
+        page
+      let innerText = (unsafeFromForeign innerTextF) :: String
+      Assert.equal "345" innerText
+      T.close browser
