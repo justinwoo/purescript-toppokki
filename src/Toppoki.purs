@@ -27,7 +27,29 @@ newtype Selector = Selector String
 derive instance newtypeSelector :: Newtype Selector _
 
 type LaunchOptions =
-  ( headless :: Boolean
+  ( headless          :: Boolean
+  , args              :: Array String
+  , ignoreDefaultArgs :: Array String
+  , ignoreHTTPSErrors :: Boolean
+  , slowMo            :: Number
+  , defaultViewport   :: Record DefaultViewPort
+  , handleSIGINT      :: Boolean
+  , handleSIGTERM     :: Boolean
+  , handleSIGHUP      :: Boolean
+  , timeout           :: Number
+  , dumpio            :: Boolean
+  , userDataDir       :: String
+  , devtools          :: Boolean
+  , pipe              :: Boolean
+  )
+
+type DefaultViewPort =
+  ( width             :: Number
+  , height            :: Number
+  , deviceScaleFactor :: Number
+  , isMobile          :: Boolean
+  , hasTouch          :: Boolean
+  , isLandscape       :: Boolean
   )
 
 launch
