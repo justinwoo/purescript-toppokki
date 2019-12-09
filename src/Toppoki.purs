@@ -27,20 +27,21 @@ newtype Selector = Selector String
 derive instance newtypeSelector :: Newtype Selector _
 
 type LaunchOptions =
-  ( headless          :: Boolean
-  , args              :: Array String
-  , ignoreDefaultArgs :: Array String
-  , ignoreHTTPSErrors :: Boolean
-  , slowMo            :: Number
+  ( args              :: Array String
   , defaultViewport   :: Record DefaultViewPort
+  , devtools          :: Boolean
+  , dumpio            :: Boolean
+  , executablePath    :: String
+  , handleSIGHUP      :: Boolean
   , handleSIGINT      :: Boolean
   , handleSIGTERM     :: Boolean
-  , handleSIGHUP      :: Boolean
-  , timeout           :: Number
-  , dumpio            :: Boolean
-  , userDataDir       :: String
-  , devtools          :: Boolean
+  , headless          :: Boolean
+  , ignoreDefaultArgs :: Array String
+  , ignoreHTTPSErrors :: Boolean
   , pipe              :: Boolean
+  , slowMo            :: Number
+  , timeout           :: Number
+  , userDataDir       :: String
   )
 
 type DefaultViewPort =
