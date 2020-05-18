@@ -13,8 +13,5 @@
   "license": "MIT",
   "devDependencies": {
     "puppeteer": "3.0.1"
-  },
-  "dependencies": {
-    "pulp": "^14.0.0"
   }
 }
