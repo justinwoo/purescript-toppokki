@@ -3,7 +3,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git://github.com/justinwoo/purescript-toppokki.git"
+    "url": "https://github.com/justinwoo/purescript-toppokki.git"
   },
   "ignore": [
     "**/.*",
