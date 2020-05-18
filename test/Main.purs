@@ -31,6 +31,7 @@ tests dir = runTest do
   suite "toppokki" do
     let crashUrl = T.URL $ "file://" <> dir <> "/test/crash.html"
         testUrl = T.URL $ "file://" <> dir <> "/test/test.html"
+        testUrl2 = T.URL $ "file://" <> dir <> "/test/test2.html"
 
     test "can screenshot and pdf output a loaded page" do
       browser <- T.launch {}
@@ -169,4 +170,22 @@ tests dir = runTest do
         page
       let innerText = (unsafeFromForeign innerTextF) :: String
       Assert.equal "345" innerText
+      T.close browser
+
+    test "can bring to front specific tab in current browser" do
+      browser <- T.launch {}
+      page1 <- T.newPage browser
+      page2 <- T.newPage browser
+
+      T.goto testUrl page1
+      T.goto testUrl2 page2
+
+      T.bringToFront page2
+
+      innerTextF <- T.unsafePageEval
+        (T.Selector ".page-title")
+        "el => el.innerText"
+        page2
+      let innerText = (unsafeFromForeign innerTextF) :: String
+      Assert.equal "title2" innerText
       T.close browser

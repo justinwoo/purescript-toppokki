@@ -145,3 +145,9 @@ exports._setUserAgent = function(string, page) {
     return page.setUserAgent(string);
   };
 };
+
+exports._bringToFront = function(page) {
+  return function() {
+    return page.bringToFront();
+  };
+};
