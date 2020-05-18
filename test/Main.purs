@@ -187,5 +187,5 @@ tests dir = runTest do
         "el => el.innerText"
         page2
       let innerText = (unsafeFromForeign innerTextF) :: String
-      Assert.equal "abc" innerText
+      Assert.equal "title2" innerText
       T.close browser
