@@ -60,6 +60,12 @@ exports._focus = function(selector, page) {
   };
 };
 
+exports._select = function(selector, string, page) {
+  return function() {
+    return page.select(selector, string);
+  };
+};
+
 exports._type = function(selector, content, options, page) {
   return function() {
     return page.type(selector, content, options);

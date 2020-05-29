@@ -155,6 +155,15 @@ pageWaitForSelector = runPromiseAffE3 _pageWaitForSelector
 focus :: Selector -> Page -> Aff Unit
 focus = runPromiseAffE2 _focus
 
+
+-- | Select a specific option in select dropdown group.
+select
+  :: Selector
+  -> String
+  -> Page
+  -> Aff Unit
+select = runPromiseAffE3 _select
+
 type_
   :: forall options trash
    . Row.Union options trash
@@ -297,6 +306,7 @@ foreign import _screenshot :: forall options. FU.Fn2 options Page (Effect (Promi
 foreign import _pdf :: forall options. FU.Fn2 options Page (Effect (Promise Buffer))
 foreign import _on :: forall a. EU.EffectFn3 String (EU.EffectFn1 a Unit) Page Unit
 foreign import _pageWaitForSelector :: forall options. FU.Fn3 Selector options Page (Effect (Promise ElementHandle))
+foreign import _select :: forall options. FU.Fn3 Selector options Page (Effect (Promise Unit))
 foreign import _focus :: FU.Fn2 Selector Page (Effect (Promise Unit))
 foreign import _type :: forall options. FU.Fn4 Selector String options Page (Effect (Promise Unit))
 foreign import _click :: FU.Fn2 Selector Page (Effect (Promise Unit))
