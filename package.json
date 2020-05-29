@@ -7,11 +7,12 @@
     "test": "test"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "pulp build --include test"
   },
   "author": "",
   "license": "MIT",
   "devDependencies": {
+    "pulp": "^14.0.0",
     "puppeteer": "3.0.1"
   }
 }
