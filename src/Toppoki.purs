@@ -20,6 +20,9 @@ foreign import data Browser :: Type
 foreign import data Page :: Type
 foreign import data ElementHandle :: Type
 
+-- This is used when one wants to use chrome-aws-lambda version of puppeteer
+foreign import data ChromeAWS :: Type
+
 newtype URL = URL String
 derive instance newtypeURL :: Newtype URL _
 
@@ -59,6 +62,14 @@ launch
   => { | options }
   -> Aff Browser
 launch = runPromiseAffE1 _launch
+
+launchChromeAWS
+  :: forall options trash
+   . Row.Union options trash LaunchOptions
+  => ChromeAWS
+  -> { | options }
+  -> Aff Browser
+launchChromeAWS = runPromiseAffE2 _launchChromeAWS
 
 newPage :: Browser -> Aff Page
 newPage = runPromiseAffE1 _newPage
@@ -298,6 +309,7 @@ bringToFront = runPromiseAffE1 _bringToFront
 
 foreign import puppeteer :: Puppeteer
 foreign import _launch :: forall options. FU.Fn1 options (Effect (Promise Browser))
+foreign import _launchChromeAWS :: forall options. FU.Fn2 ChromeAWS options (Effect (Promise Browser))
 foreign import _newPage :: FU.Fn1 Browser (Effect (Promise Page))
 foreign import _goto :: FU.Fn2 URL Page (Effect (Promise Unit))
 foreign import _close :: FU.Fn1 Browser (Effect (Promise Unit))

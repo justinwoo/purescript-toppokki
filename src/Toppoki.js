@@ -8,6 +8,12 @@ exports._launch = function(options) {
   };
 };
 
+exports._launchChromeAWS = function(chromium, options) {
+  return function() {
+    return chromium.puppeteer.launch(options);
+  };
+};
+
 exports._newPage = function(browser) {
   return function() {
     return browser.newPage();
