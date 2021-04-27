@@ -78,6 +78,12 @@ exports._type = function(selector, content, options, page) {
   };
 };
 
+exports._setViewport = function(viewport, page) {
+  return function() {
+    return page.setViewport(viewport);
+  };
+};
+
 exports._click = function(selector, page) {
   return function() {
     return page.click(selector);

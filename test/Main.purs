@@ -36,6 +36,14 @@ tests dir = runTest do
     test "can screenshot and pdf output a loaded page" do
       browser <- T.launch {}
       page <- T.newPage browser
+      T.setViewport
+        { width: 300.0
+        , height: 500.0
+        , deviceScaleFactor: 1.0
+        , isMobile: true
+        , hasTouch: true
+        , isLandscape: false
+        } page
       T.goto crashUrl page
       content <- T.content page
       Assert.assert "content is non-empty string" (String.length content > 0)

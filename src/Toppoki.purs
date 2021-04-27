@@ -299,6 +299,10 @@ keyboardUp :: forall options trash
              -> Aff Unit
 keyboardUp = runPromiseAffE3 _keyboardUp
 
+-- | set Viewport
+setViewport :: Record DefaultViewPort -> Page -> Aff Unit
+setViewport = runPromiseAffE2 _setViewport
+
 -- | Specific user agent to use in this page
 setUserAgent :: String -> Page -> Aff Unit
 setUserAgent = runPromiseAffE2 _setUserAgent
@@ -320,6 +324,7 @@ foreign import _on :: forall a. EU.EffectFn3 String (EU.EffectFn1 a Unit) Page U
 foreign import _pageWaitForSelector :: forall options. FU.Fn3 Selector options Page (Effect (Promise ElementHandle))
 foreign import _select :: forall options. FU.Fn3 Selector options Page (Effect (Promise Unit))
 foreign import _focus :: FU.Fn2 Selector Page (Effect (Promise Unit))
+foreign import _setViewport :: FU.Fn2 (Record DefaultViewPort) Page (Effect (Promise Unit))
 foreign import _type :: forall options. FU.Fn4 Selector String options Page (Effect (Promise Unit))
 foreign import _click :: FU.Fn2 Selector Page (Effect (Promise Unit))
 foreign import _waitForNavigation :: forall options. FU.Fn2 options Page (Effect (Promise Unit))
