@@ -12,7 +12,6 @@
   "author": "",
   "license": "MIT",
   "devDependencies": {
-    "pulp": "^15.0.0",
-    "puppeteer": "9.0.0"
+    "pulp": "^15.0.0"
   }
 }

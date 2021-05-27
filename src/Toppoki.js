@@ -1,11 +1,4 @@
 
-exports._launch = function(options) {
-  return function() {
-    var puppeteer = require("puppeteer");
-    return puppeteer.launch(options);
-  };
-};
-
 exports._launchChromeAWS = function(chromium, options) {
   return function() {
     return chromium.puppeteer.launch(options);

@@ -1,6 +1,6 @@
 # PureScript-Toppokki
 
-A binding to [puppeteer](https://github.com/GoogleChrome/puppeteer) to drive headless Chrome.
+A binding to Chrome-aws [puppeteer](https://github.com/GoogleChrome/puppeteer) to drive headless Chrome.
 
 This module is "incomplete" (but useful for regular work projects), and you can help by submitting PRs. You may find that `goto`, `pageWaitForSelector`, `click`, and `unsafeEvaluateStringFunction` already provide the functionality you need.
 

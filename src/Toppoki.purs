@@ -56,13 +56,6 @@ type DefaultViewPort =
   , isLandscape       :: Boolean
   )
 
-launch
-  :: forall options trash
-   . Row.Union options trash LaunchOptions
-  => { | options }
-  -> Aff Browser
-launch = runPromiseAffE1 _launch
-
 launchChromeAWS
   :: forall options trash
    . Row.Union options trash LaunchOptions
