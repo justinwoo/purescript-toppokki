@@ -1,9 +1,7 @@
-var puppeteer = require("puppeteer");
-
-exports.puppeteer = puppeteer;
 
 exports._launch = function(options) {
   return function() {
+    var puppeteer = require("puppeteer");
     return puppeteer.launch(options);
   };
 };

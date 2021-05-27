@@ -311,7 +311,6 @@ setUserAgent = runPromiseAffE2 _setUserAgent
 bringToFront :: Page -> Aff Unit
 bringToFront = runPromiseAffE1 _bringToFront
 
-foreign import puppeteer :: Puppeteer
 foreign import _launch :: forall options. FU.Fn1 options (Effect (Promise Browser))
 foreign import _launchChromeAWS :: forall options. FU.Fn2 ChromeAWS options (Effect (Promise Browser))
 foreign import _newPage :: FU.Fn1 Browser (Effect (Promise Page))
