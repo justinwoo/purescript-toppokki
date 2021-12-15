@@ -1,13 +1,12 @@
-{ pkgs ? import <nixpkgs> {} }:
+{ pkgs ? import <nixpkgs> { } }:
 let
-  easy-ps = import (
-    pkgs.fetchFromGitHub {
+  easy-ps = import
+    (pkgs.fetchFromGitHub {
       owner = "justinwoo";
       repo = "easy-purescript-nix";
-      rev = "0ba91d9aa9f7421f6bfe4895677159a8a999bf20";
-      sha256 = "1baq7mmd3vjas87f0gzlq83n2l1h3dlqajjqr7fgaazpa9xgzs7q";
-    }
-  ) {
+      rev = "5716cd791c999b3246b4fe173276b42c50afdd8d";
+      sha256 = "1r9lx4xhr42znmwb2x2pzah920klbjbjcivp2f0pnka7djvd2adq";
+    }) {
     inherit pkgs;
   };
 in
