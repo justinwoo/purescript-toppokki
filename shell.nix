@@ -4,17 +4,20 @@ let
     (pkgs.fetchFromGitHub {
       owner = "justinwoo";
       repo = "easy-purescript-nix";
-      rev = "5716cd791c999b3246b4fe173276b42c50afdd8d";
-      sha256 = "1r9lx4xhr42znmwb2x2pzah920klbjbjcivp2f0pnka7djvd2adq";
-    }) {
-    inherit pkgs;
-  };
+      rev = "0ad5775c1e80cdd952527db2da969982e39ff592";
+      sha256 = "0x53ads5v8zqsk4r1mfpzf5913byifdpv5shnvxpgw634ifyj1kg";
+    })
+    {
+      inherit pkgs;
+    };
 in
 pkgs.mkShell {
   buildInputs = [
     easy-ps.purs
+    easy-ps.psc-package
     pkgs.nodejs
-    pkgs.yarn
+    pkgs.nodePackages.pulp
     pkgs.nodePackages.bower
+    pkgs.nodePackages.yarn
   ];
 }
