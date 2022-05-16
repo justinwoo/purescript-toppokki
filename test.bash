@@ -1,8 +1,11 @@
-#!/usr/bin/env nix-shell
-#!nix-shell shell.nix -i bash
+#! /usr/bin/env nix-shell
+#! nix-shell shell.nix -i bash
 
-yarn
+set -e
+
 bower install
+yarn
 
-yarn build
-node -e "require('./output/Test.Main').main()"
+pulp build --include test
+
+node ./test/index.mjs
